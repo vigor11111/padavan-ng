@@ -4973,7 +4973,6 @@ VOID RTMPIoctlGetSiteSurvey(
 	BSS_ENTRY *pBss;
 	UINT32 TotalLen, BufLen = IW_SCAN_MAX_DATA;
 	BSS_TABLE *pScanTab;
-	pScanTab = &pAdapter->ScanTab;
 #ifdef WSC_INCLUDED
 	max_len += WPS_LINE_LEN;
 #endif
@@ -5056,6 +5055,7 @@ VOID RTMPIoctlGetSiteSurvey(
 	while ((ScanRunning(pAdapter) == TRUE) && (WaitCnt++ < 200))
 		OS_WAIT(500);
 
+	pScanTab = &pAdapter->ScanTab;
 	BssTableSortByRssi(pScanTab,FALSE);
 
 	for (i = bss_start_idx; i < pAdapter->ScanTab.BssNr; i++) {
