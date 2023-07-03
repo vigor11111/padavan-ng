@@ -54,13 +54,6 @@ $j.fn.fileName = function(){
 	}
 };
 
-function submitInternet(v){
-	showLoading();
-	document.bigtmp_action.action = "bit_action.asp";
-	document.bigtmp_action.connect_action.value = v;
-	document.bigtmp_action.submit();
-}
-
 </script>
 <style>
 .file {
@@ -182,11 +175,10 @@ function submitInternet(v){
                                             <li><#FW_desc4#></li>
                                             <li><#FW_desc5#></li>
                                             <li><#FW_desc6#></li>
-                                            <li><#FW_desc7#><br/><input id="bingtmp" class="btn btn-success" style="width:50px display:none;" type="button" name="bingtmp" value="<#TMP_btn#>" onclick="submitInternet('bigtmp');" /></li>
                                         </ol>
                                     </div>
 
-                                    <table width="100%" cellpadding="4" cellspacing="0" class="table">
+                                    <table width="100%" cellpadding="0" cellspacing="0" class="table" style="margin-bottom: 0px"> 
                                         <tr>
                                             <th width="50%"><#FW_item1#></th>
                                             <td><input type="text" class="input" value="<% nvram_get_x("", "productid"); %>" readonly="1"></td>
@@ -195,8 +187,20 @@ function submitInternet(v){
                                             <th><#FW_item2#></th>
                                             <td><input type="text" name="firmver" class="input" value="<% nvram_get_x("",  "firmver_sub"); %>" readonly="1"></td>
                                         </tr>
+                                    </table>
+                                    <table width="100%" cellpadding="0" cellspacing="0" class="table" style="margin-bottom: 0px"> 
                                         <tr>
-                                            <th><#FW_item5#></th>
+                                            <td>
+                                                <a href="javascript:spoiler_toggle('soft_info1')"><span><#FW_soft_info#></span></a>
+                                                <div id="soft_info1" style="display:none">
+	                                            <textarea class="span12" id="etc.firmware.conf" "font-family: 'Courier New', Courier, mono; font-size:12px;" rows="23" wrap="off" readonly="1"><% nvram_dump("etc.firmware.conf",""); %></textarea>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <table width="100%" cellpadding="0" cellspacing="0" class="table"> 
+                                        <tr>
+                                            <th width="50%"><#FW_item5#></th>
                                             <td>
                                                 <input type="file" name="file" size="36" />
                                             </td>
@@ -215,6 +219,7 @@ function submitInternet(v){
                                             <li><#FW_n2#></li>
                                         </ol>
                                     </div>
+
                                 </div>
                             </div>
                         </div>
@@ -223,11 +228,10 @@ function submitInternet(v){
             </div>
         </div>
     </div>
+
     </form>
+
     <div id="footer"></div>
 </div>
-<form method="post" name="bigtmp_action" action="">
-    <input type="hidden" name="connect_action" value="">
-</form>
 </body>
 </html>

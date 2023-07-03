@@ -22,7 +22,7 @@ helpcontent[5] = new Array("",
 				"<#LANHostConfig_x_LDNSServer1_itemdesc#>",
 				"<#LANHostConfig_x_WINSServer_itemdesc#>",
 				"<#LANHostConfig_ManualDHCPEnable_itemdesc#>",
-				"<#LANHostConfig_x_LDNSServer6_itemdesc#>");
+				"<#LANHostConfig_ForceDNS_itemdesc#>");
 helpcontent[6] = new Array("",
 				"<#RHELP_desc4#>",
 				"<#RHELP_desc5#>",
@@ -87,8 +87,7 @@ helpcontent[11] = new Array("",
 				"<#LANHostConfig_x_ServerLogEnable_itemdesc#>",
 				"<#LANHostConfig_x_TimeZone_itemdesc#>",
 				"<#LANHostConfig_x_NTPServer_itemdesc#>",
-				"<#LANHostConfig_x_Password_itemdesc#>",
-				"<#Adm_System_zram_itemdesc#>");
+				"<#LANHostConfig_x_Password_itemdesc#>");
 //Log
 helpcontent[12] = new Array("",
 				"<#General_x_SystemUpTime_itemdesc#>",
@@ -182,6 +181,13 @@ helpcontent[25] = new Array("",
 				"<#Adm_Svc_dnscrypt_force_dns_desc#>",
 				"<#Adm_Svc_dnscrypt_options_desc#>");
 
+// stubby
+helpcontent[26] = new Array("",
+				"<#Adm_Svc_stubby_desc#>");
+
+// iper3
+helpcontent[27] = new Array("",
+				"<#Adm_Svc_iperf3_desc#>");
 
 function openTooltip(obj, hint_array_id, hint_show_id)
 {
@@ -207,19 +213,19 @@ function openTooltip(obj, hint_array_id, hint_show_id)
 function openHint(hint_array_id, hint_show_id){
 	if (help_enable == "0" && hint_show_id > 0)
 		return;
-
+	
 	$('hintofPM').style.display = "";
-
+	
 	showtext($('helpname'), "<#CTL_help#>");
-
+	
 	if($("statusframe")){
 		$("statusframe").src = "";
 		$("statusframe").style.display = "none";
 	}
-
+	
 	$('hint_body').style.display = "";
 	$("statusframe").style.display = "none";
-
+	
 	showtext($('helpname'), "<#CTL_help#>");
 	showtext($('hint_body'), helpcontent[hint_array_id][hint_show_id]);
 }

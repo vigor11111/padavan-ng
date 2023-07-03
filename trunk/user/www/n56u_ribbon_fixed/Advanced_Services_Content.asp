@@ -34,6 +34,8 @@ $j(document).ready(function() {
 	init_itoggle('tor_enable', change_tor_enabled);
 	init_itoggle('privoxy_enable', change_privoxy_enabled);
 	init_itoggle('dnscrypt_enable', change_dnscrypt_enabled);
+	init_itoggle('stubby_enable', change_stubby_enabled);
+	init_itoggle('iperf3_enable');
 });
 
 </script>
@@ -78,8 +80,8 @@ function initial(){
 		http_proto_change();
 	}
 	change_crond_enabled();
-
-	if(found_app_tor() || found_app_privoxy() || found_app_dnscrypt()){
+	
+	if(found_app_tor() || found_app_privoxy() || found_app_dnscrypt() || found_app_stubby()){
 		showhide_div('tbl_anon', 1);
 	}
 
@@ -88,7 +90,7 @@ function initial(){
 		showhide_div('row_tor_conf', 0);
 	}else
 		change_tor_enabled();
-
+		
 	if(!found_app_privoxy()){
 		showhide_div('row_privoxy', 0);
 		showhide_div('row_privoxy_conf', 0);
@@ -97,7 +99,7 @@ function initial(){
 		showhide_div('row_privoxy_trust', 0);
 	}else
 		change_privoxy_enabled();
-
+		
 	if(!found_app_dnscrypt()){
 		showhide_div('row_dnscrypt', 0);
 		showhide_div('row_dnscrypt_resolver', 0);
@@ -107,16 +109,26 @@ function initial(){
 		showhide_div('row_dnscrypt_options', 0);
 	}else
 		change_dnscrypt_enabled();
+		
+	if(!found_app_stubby()){
+		showhide_div('row_stubby', 0);
+		showhide_div('row_stubby_conf', 0);
+		showhide_div('row_stubby_log', 0);
+	}else
+		change_stubby_enabled();
+
+	if(!found_app_iperf3())
+		showhide_div('row_iperf3', 0);
 }
 
 function applyRule(){
 	if(validForm()){
 		showLoading();
-
+		
 		document.form.action_mode.value = " Apply ";
 		document.form.current_page.value = "/Advanced_Services_Content.asp";
 		document.form.next_page.value = "";
-
+		
 		document.form.submit();
 	}
 
@@ -142,6 +154,15 @@ function applyRule(){
 		showhide_div('row_dnscrypt_options', 0);
 	}
 
+	if(!found_app_stubby()){
+		showhide_div('row_stubby', 0);
+		showhide_div('row_stubby_conf', 0);
+		showhide_div('row_stubby_log', 0);
+	}
+
+	if(!found_app_iperf3()){
+		showhide_div('row_iperf3', 0);
+	}
 }
 
 function validForm(){
@@ -191,6 +212,10 @@ function textarea_sshd_enabled(v){
 
 function textarea_tor_enabled(v){
 	inputCtrl(document.form['torconf.torrc'], v);
+}
+
+function textarea_stubby_enabled(v){
+	inputCtrl(document.form['stbconf.stubby.yml'], v);
 }
 
 function textarea_privoxy_enabled(v){
@@ -319,6 +344,15 @@ function change_dnscrypt_enabled(){
 	showhide_div('row_dnscrypt_options', v);
 }
 
+function change_stubby_enabled(){
+	var v = document.form.stubby_enable[0].checked;
+	showhide_div('row_stubby_conf', v);
+	showhide_div('row_stubby_log', v);
+	if (!login_safe())
+		v = 0;
+	textarea_stubby_enabled(v);
+}
+
 function change_crond_enabled(){
 	var v = document.form.crond_enable[0].checked;
 	showhide_div('row_crontabs', v);
@@ -424,7 +458,7 @@ function change_crond_enabled(){
                                                 <select name="http_access" class="input">
                                                     <option value="0" <% nvram_match_x("", "http_access", "0","selected"); %>><#checkbox_No#> (*)</option>
                                                     <option value="1" <% nvram_match_x("", "http_access", "1","selected"); %>>Wired clients only</option>
-                                                    <option value="2" <% nvram_match_x("", "http_access", "2","selected"); %>>Wired + Wireless MainAP clients</option>
+                                                    <option value="2" <% nvram_match_x("", "http_access", "2","selected"); %>>Wired and MainAP clients</option>
                                                 </select>
                                             </td>
                                         </tr>
@@ -611,6 +645,43 @@ function change_crond_enabled(){
 					    </td>
 					</tr>
 
+                                        <tr id="row_stubby">
+                                            <th width="50%"><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this, 26, 1);"><#Adm_Svc_stubby#></a></th>
+                                            <td>
+                                                <div class="main_itoggle">
+                                                    <div id="stubby_enable_on_of">
+                                                        <input type="checkbox" id="stubby_enable_fake" <% nvram_match_x("", "stubby_enable", "1", "value=1 checked"); %><% nvram_match_x("", "stubby_enable", "0", "value=0"); %>>
+                                                    </div>
+                                                </div>
+                                                <div style="position: absolute; margin-left: -10000px;">
+                                                    <input type="radio" name="stubby_enable" id="stubby_enable_1" class="input" value="1" <% nvram_match_x("", "stubby_enable", "1", "checked"); %>/><#checkbox_Yes#>
+                                                    <input type="radio" name="stubby_enable" id="stubby_enable_0" class="input" value="0" <% nvram_match_x("", "stubby_enable", "0", "checked"); %>/><#checkbox_No#>
+                                                </div>
+                                            </td>
+                                        </tr>
+					<tr id="row_stubby_conf" style="display:none">
+						<td colspan="2">
+						<a href="javascript:spoiler_toggle('spoiler_stubby_conf')"><span><#CustomConf#> "stubby.yml"</span></a>
+							<div id="spoiler_stubby_conf" style="display:none;">
+								<textarea rows="16" wrap="off" spellcheck="false" maxlength="4096" class="span12" name="stbconf.stubby.yml" style="font-family:'Courier New'; font-size:12px;"><% nvram_dump("stbconf.stubby.yml",""); %></textarea>
+							</div>
+						</td>
+					</tr>
+                                        <tr id="row_stubby_log" style="display:none;">
+                                            <th width="50%"><#Adm_Svc_stubby_log#></th>
+                                            <td>
+                                                <select name="stubby_log" class="input">
+                                                    <option value="0" <% nvram_match_x("", "stubby_log", "0", "selected"); %>>0: EMERG</option>
+                                                    <option value="1" <% nvram_match_x("", "stubby_log", "1", "selected"); %>>1: ALERT</option>
+                                                    <option value="2" <% nvram_match_x("", "stubby_log", "2", "selected"); %>>2: CRIT</option>
+                                                    <option value="3" <% nvram_match_x("", "stubby_log", "3", "selected"); %>>3: ERROR (*)</option>
+                                                    <option value="4" <% nvram_match_x("", "stubby_log", "4", "selected"); %>>4: WARN</option>
+                                                    <option value="5" <% nvram_match_x("", "stubby_log", "5", "selected"); %>>5: NOTICE</option>
+                                                    <option value="6" <% nvram_match_x("", "stubby_log", "6", "selected"); %>>6: INFO</option>
+                                                    <option value="7" <% nvram_match_x("", "stubby_log", "7", "selected"); %>>7: DEBUG</option>
+                                                </select>
+                                            </td>
+                                        </tr>
                                         <tr id="row_privoxy">
                                             <th width="50%"><#Adm_Svc_privoxy#></th>
                                             <td>
@@ -703,9 +774,9 @@ function change_crond_enabled(){
                                         <tr id="row_dnscrypt_force_dns" style="display:none;">
                                             <th width="50%"><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this, 25, 2);"><#Adm_Svc_dnscrypt_force_dns#></a></th>
                                             <td>
-                                                <select name="dnscrypt_force_dns" class="input">
-                                                    <option value="0" <% nvram_match_x("", "dnscrypt_force_dns", "0", "selected"); %>><#checkbox_No#> (*)</option>
-                                                    <option value="1" <% nvram_match_x("", "dnscrypt_force_dns", "1", "selected"); %>><#checkbox_Yes#></option>
+                                                <select name="dnscrypt_dns" class="input">
+                                                    <option value="0" <% nvram_match_x("", "dnscrypt_dns", "0", "selected"); %>><#checkbox_No#></option>
+                                                    <option value="1" <% nvram_match_x("", "dnscrypt_dns", "1", "selected"); %>><#checkbox_Yes#> (*)</option>
                                                 </select>
                                             </td>
                                         </tr>
@@ -782,6 +853,20 @@ function change_crond_enabled(){
                                                 <div style="position: absolute; margin-left: -10000px;">
                                                     <input type="radio" name="watchdog_cpu" id="watchdog_cpu_1" class="input" value="1" <% nvram_match_x("", "watchdog_cpu", "1", "checked"); %>/><#checkbox_Yes#>
                                                     <input type="radio" name="watchdog_cpu" id="watchdog_cpu_0" class="input" value="0" <% nvram_match_x("", "watchdog_cpu", "0", "checked"); %>/><#checkbox_No#>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr id="row_iperf3">
+                                            <th width="50%"><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this,27,1);"><#Adm_Svc_iperf3#></a></th>
+                                            <td>
+                                                <div class="main_itoggle">
+                                                    <div id="iperf3_enable_on_of">
+                                                        <input type="checkbox" id="iperf3_enable_fake" <% nvram_match_x("", "iperf3_enable", "1", "value=1 checked"); %><% nvram_match_x("", "iperf3_enable", "0", "value=0"); %>>
+                                                    </div>
+                                                </div>
+                                                <div style="position: absolute; margin-left: -10000px;">
+                                                    <input type="radio" name="iperf3_enable" id="iperf3_enable_1" class="input" value="1" <% nvram_match_x("", "iperf3_enable", "1", "checked"); %>/><#checkbox_Yes#>
+                                                    <input type="radio" name="iperf3_enable" id="iperf3_enable_0" class="input" value="0" <% nvram_match_x("", "iperf3_enable", "0", "checked"); %>/><#checkbox_No#>
                                                 </div>
                                             </td>
                                         </tr>
