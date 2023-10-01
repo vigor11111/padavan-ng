@@ -30,18 +30,18 @@ check:
     - apk add --no-cache coreutils curl jq
 
     # get container repository id; -> null if no repo
-    - container_repo=$($CURL_CMD "${API_URL}/registry/repositories" | jq -r '.[0].id | values | @sh')
+    - container_repo=$($CURL_CMD "${API_URL}/registry/repositories" | jq -r '.[0].id | values')
 
     # get timestamp of the latest image; -> "" if no image
     - image_info_url="${API_URL}/registry/repositories/${container_repo}/tags/${IMAGE_TAG}"
-    - image_time=$($CURL_CMD "$image_info_url" | jq -r '.created_at | values | @sh')
+    - image_time=$($CURL_CMD "$image_info_url" | jq -r '.created_at | values')
     - echo "DEBUG - Image time - $image_time"
     - image_time=$(date +%s -d "${image_time:-0-01-01}")
     - echo "DEBUG - Image timestamp - $image_time"
 
     # get timestamp of the latest commit in $COMMIT_REF and $COMMIT_PATH; -> "" if no commits
     - commit_info_url="${API_URL}/repository/commits?ref_name=${COMMIT_REF}&path=${COMMIT_PATH}"
-    - commit_time=$($CURL_CMD "$commit_info_url" | jq -r '.[0].committed_date | values | @sh')
+    - commit_time=$($CURL_CMD "$commit_info_url" | jq -r '.[0].committed_date | values')
     - echo "DEBUG - Commit time - $commit_time"
     - commit_time=$(date +%s -d "${commit_time:-0-01-01}")
     - echo "DEBUG - Commit timestamp - $commit_time"
