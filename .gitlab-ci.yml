@@ -1,0 +1,118 @@
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web"
+      when: always
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      changes:
+        - toolchain/*
+    - when: never
+
+variables:
+  GIT_STRATEGY: none
+  IMAGE_TAG: latest
+
+stages:
+  - check
+  - build toolchain
+  - build image
+
+check:
+  stage: check
+  image: bash
+  variables:
+    COMMIT_PATH: "toolchain"
+    COMMIT_REF: "$CI_DEFAULT_BRANCH"
+    API_URL: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}"
+    CURL_CMD: "curl -fsSL -H 'JOB-TOKEN: $CI_JOB_TOKEN'"
+  rules:
+    - if: $REBUILD == null
+  script:
+    - apk add --no-cache coreutils curl jq
+
+    # get container repository id; -> null if no repo
+    - container_repo=$($CURL_CMD "${API_URL}/registry/repositories" | jq -r '.[0].id')
+
+    # get timestamp of the latest image; -> "" if no image
+    - image_info_url="${API_URL}/registry/repositories/${container_repo}/tags/${IMAGE_TAG}"
+    - image_time=$($CURL_CMD "$image_info_url" | jq -r '.created_at' | date +%s -f-)
+
+    # get timestamp of the latest commit in $COMMIT_REF and $COMMIT_PATH; -> "" if no commits
+    - commit_info_url="${API_URL}/repository/commits?ref_name=${COMMIT_REF}&path=${COMMIT_PATH}"
+    - commit_time=$($CURL_CMD "$commit_info_url" | jq -r '.[0].committed_date' | date +%s -f-)
+
+    - | # new commits since last image build? trigger rebuild
+      if (( commit_time > image_time )); then
+        $CURL_CMD -F "variables[REBUILD]=1" \
+                  -F "ref=$COMMIT_REF" \
+                  -F "token=$CI_JOB_TOKEN" \
+                  "${API_URL}/trigger/pipeline"
+      fi
+
+
+build toolchain:
+  stage: build toolchain
+  image: ubuntu:22.04
+  artifacts:
+    expire_in: 3 mos
+    paths: [ toolchain.tzst ]
+  rules:
+    - if: $REBUILD
+  script:
+    - |
+      apt update
+      apt install --no-install-recommends -y \
+          autoconf \
+          automake \
+          bison \
+          bzip2 \
+          flex \
+          g++ \
+          gawk \
+          gcc \
+          git \
+          gperf \
+          help2man \
+          libncurses5-dev \
+          libstdc++6 \
+          libtool \
+          libtool-bin \
+          make \
+          patch \
+          texinfo \
+          unzip \
+          wget \
+          xz-utils
+
+    # sparse chackout
+    - git clone -n --depth 1 --filter tree:0 "$CI_REPOSITORY_URL" .
+    - git sparse-checkout set --no-cone toolchain
+    - git checkout
+    
+    - cd toolchain
+    - ./clean_sources.sh
+    - ./build_toolchain.sh
+
+    - tar -cf - toolchain/out | zstd -9 -T0 > toolchain.tzst
+
+
+build image:
+  stage: build image
+  image: docker:stable
+  services:
+    - docker:dind
+  rules:
+    - if: $REBUILD
+  script:
+    - apk add --no-cache git zstd
+
+    # sparse chackout
+    - git clone -n --depth 1 --filter tree:0 "$CI_REPOSITORY_URL"
+    - cd "$CI_PROJECT_NAME"
+    - git sparse-checkout set --no-cone toolchain
+    - git checkout
+
+    - unzstd -c ../toolchain.tzst | tar -xf -
+
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t "$CI_REGISTRY_IMAGE:$IMAGE_TAG" -f Dockerfile .
+    - docker push "$CI_REGISTRY_IMAGE:$IMAGE_TAG"
