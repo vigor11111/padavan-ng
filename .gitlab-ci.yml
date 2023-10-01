@@ -71,6 +71,7 @@ build toolchain:
           automake \
           bison \
           bzip2 \
+          ca-certificates \
           flex \
           g++ \
           gawk \
