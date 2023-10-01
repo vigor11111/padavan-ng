@@ -88,7 +88,8 @@ build toolchain:
           texinfo \
           unzip \
           wget \
-          xz-utils
+          xz-utils \
+          zstd
 
     # sparse chackout
     - git clone -n --depth 1 --filter tree:0 "$CI_REPOSITORY_URL" .
@@ -99,7 +100,7 @@ build toolchain:
     - ./clean_sources.sh
     - ./build_toolchain.sh
 
-    - tar -cf - ../toolchain/out | zstd -9 -T0 > ../toolchain.tzst
+    - tar -I "zstd -9 -T0" -cf ../toolchain.tzst ../toolchain/out
 
 
 build image:
