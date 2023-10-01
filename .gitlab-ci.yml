@@ -23,7 +23,7 @@ check:
     COMMIT_PATH: "toolchain"
     COMMIT_REF: "$CI_DEFAULT_BRANCH"
     API_URL: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}"
-    CURL_CMD: "curl -fsSL -H 'JOB-TOKEN: $CI_JOB_TOKEN'"
+    CURL_CMD: "curl -sL -H 'JOB-TOKEN: $CI_JOB_TOKEN'"
   rules:
     - if: $REBUILD == null
   script:
