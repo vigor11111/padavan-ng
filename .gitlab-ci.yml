@@ -108,7 +108,7 @@ build image:
     # sparse chackout
     - git clone -n --depth 1 --filter tree:0 "$CI_REPOSITORY_URL"
     - cd "$CI_PROJECT_NAME"
-    - git sparse-checkout set --no-cone toolchain
+    - git sparse-checkout set --no-cone Dockerfile
     - git checkout
 
     - unzstd -c ../toolchain.tzst | tar -xf -

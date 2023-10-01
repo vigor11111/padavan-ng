@@ -74,4 +74,8 @@ ENV LANG="en_US.UTF-8" \
 
 WORKDIR "$BASE_DIR"
 
-COPY toolchain toolchain
+RUN --mount=target=/mnt \
+    if [ -d /mnt/toolchain/out ]; then \
+      mkdir toolchain; \
+      cp -r /mnt/toolchain/out toolchain; \
+    fi
