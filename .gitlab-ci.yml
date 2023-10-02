@@ -26,6 +26,7 @@ check:
     CURL_CMD: "curl -sL -H 'JOB-TOKEN: $CI_JOB_TOKEN'"
   rules:
     - if: $REBUILD == null
+    - if: $REBUILD_CONTAINER == null
   script:
     - apk add --no-cache coreutils curl jq
 
@@ -106,16 +107,17 @@ build image:
     - docker:dind
   rules:
     - if: $REBUILD
+    - if: $REBUILD_CONTAINER
   script:
-    - apk add --no-cache git zstd
-
-    # sparse checkout
-    - git clone -n --depth 1 --filter tree:0 "$CI_REPOSITORY_URL"
-    - cd "$CI_PROJECT_NAME"
-    - git sparse-checkout set --no-cone /Dockerfile
-    - git checkout
-
-    - unzstd -c ../toolchain.tzst | tar -xf -
+#    - apk add --no-cache git zstd
+#
+#    # sparse checkout
+#    - git clone -n --depth 1 --filter tree:0 "$CI_REPOSITORY_URL"
+#    - cd "$CI_PROJECT_NAME"
+#    - git sparse-checkout set --no-cone /Dockerfile
+#    - git checkout
+#
+#    - unzstd -c ../toolchain.tzst | tar -xf -
 
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker build -t "$CI_REGISTRY_IMAGE:$IMAGE_TAG" -f Dockerfile .
