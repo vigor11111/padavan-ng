@@ -64,7 +64,8 @@ RUN apt update && \
         vim \
         wget \
         xxd \
-        zlib1g-dev && \
+        zlib1g-dev \
+        zstd && \
     locale-gen --no-purge en_US.UTF-8 ru_RU.UTF-8 && \
     apt clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
