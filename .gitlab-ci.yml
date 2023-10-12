@@ -32,24 +32,26 @@ check:
     - |
       apk add --no-cache coreutils curl jq
 
-      # get toolchain package id; -> "" if no package
+      echo "Getting toolchain package ID" # -> "" if no package
       package_response="$(curl -LH "$TKN" -G -d "package_type=generic" \
                                              -d "package_name=$PACKAGE_NAME" "$API_URL/packages")"
       package_id="$(jq -r '.[] | select(.version == env.PACKAGE_VERSION)
                                | .id | values' <<< "$package_response")"
 
-      # get timestamp of the latest image; -> "" if no image
+      echo "Getting timestamp of the latest image" # -> "" if no image
       files_response="$(curl -LH "$TKN" "$API_URL/packages/$package_id/package_files")"
       file_time="$(jq -r 'map(select(.file_name == env.TOOLCHAIN_FILE))
                           | max_by(.id) | .created_at | values' <<< "$files_response")"
       file_time=$(date +%s -d "${file_time:-0-01-01}")
 
-      # get timestamp of the latest commit in $COMMIT_PATH of $COMMIT_REF; -> "" if no commits
-      commit_info_url="$API_URL/repository/commits?ref_name=$COMMIT_REF&path=$COMMIT_PATH"
-      commit_time=$(curl -L "$commit_info_url" | jq -r '.[0].committed_date | values')
+      echo "Getting timestamp of the latest commit in $COMMIT_PATH" # -> "" if no commits
+      commit_response="$(curl -L -G -d "path=$COMMIT_PATH" \
+                                    -d "ref_name=$COMMIT_REF" "$API_URL/repository/commits")"
+      commit_time=$(jq -r '.[0].committed_date | values' <<< "$commit_response")
       commit_time=$(date +%s -d "${commit_time:-0-01-01}")
 
-      # new commits to $COMMIT_PATH since last image build? trigger rebuild
+      echo "Will rebuild toolchain if $commit_time > $file_time"
+      # new commits to $COMMIT_PATH since last package build? trigger rebuild
       if (( commit_time > file_time )); then
         curl -F "token=$CI_JOB_TOKEN" \
              -F "variables[REBUILD]=1" \
@@ -110,11 +112,13 @@ publish package:
     - |
       apk add --no-cache curl jq
 
+      echo "Uploading $TOOLCHAIN_FILE"
       upload_url="$API_URL/packages/generic/$PACKAGE_NAME/$PACKAGE_VERSION/$TOOLCHAIN_FILE?select=package_file"
       upload_response="$(curl -LH "$TKN" -T "$TOOLCHAIN_FILE" "$upload_url")"
       file_id="$(jq -r '.id | values' <<< "$upload_response")"
       (( file_id > 0 )) || { echo "Upload failed"; exit 1; }
 
+      echo "Getting old files list"
       package_response="$(curl -LH "$TKN" -G -d "package_type=generic" \
                                              -d "package_name=$PACKAGE_NAME" "$API_URL/packages")"
       package_id="$(jq -r '.[] | select(.version == env.PACKAGE_VERSION)
@@ -124,10 +128,11 @@ publish package:
       package_files="$(jq -r '.[] | select(.file_name == env.TOOLCHAIN_FILE)
                                   | .id | values' <<< "$files_response")"
 
+      echo "Removing old files"
       while IFS= read -r old_file_id; do
         if [[ -n $old_file_id && $old_file_id != $file_id ]]; then
           delete_url="$API_URL/packages/$package_id/package_files/$old_file_id"
-          delete_response="$(curl -LH "$TKN" -o /dev/null -w "%{http_code}" -X DELETE "$delete_url")"
+          curl -LH "$TKN" -o /dev/null -w "%{http_code}" -X DELETE "$delete_url"
         fi
       done <<< "$package_files"
 
