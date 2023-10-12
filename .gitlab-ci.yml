@@ -3,15 +3,15 @@ workflow:
     - if: $CI_PIPELINE_SOURCE == "web"
     - if: $CI_PIPELINE_SOURCE == "pipeline"
     - if: $CI_PIPELINE_SOURCE == "schedule"
-      changes:
-        - toolchain/*
-    - when: never
 
 variables:
   GIT_DEPTH: 3
-  API_URL: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}"
+  API_URL: "$CI_API_V4_URL/projects/$CI_PROJECT_ID"
   TKN: "JOB-TOKEN: $CI_JOB_TOKEN"
   IMAGE_TAG: latest
+  PACKAGE_NAME: toolchain
+  PACKAGE_VERSION: latest
+  TOOLCHAIN_FILE: toolchain.tzst
 
 stages:
   - check
@@ -32,13 +32,17 @@ check:
     - |
       apk add --no-cache coreutils curl jq
 
-      # get container repository id; -> "" if no repo
-      container_repo=$(curl -L "$API_URL/registry/repositories" | jq -r '.[0].id | values')
+      # get toolchain package id; -> "" if no package
+      package_response="$(curl -LH "$TKN" -G -d "package_type=generic" \
+                                             -d "package_name=$PACKAGE_NAME" "$API_URL/packages")"
+      package_id="$(jq -r '.[] | select(.version == env.PACKAGE_VERSION)
+                               | .id | values' <<< "$package_response")"
 
       # get timestamp of the latest image; -> "" if no image
-      image_info_url="$API_URL/registry/repositories/$container_repo/tags/$IMAGE_TAG"
-      image_time=$(curl -L "$image_info_url" | jq -r '.created_at | values')
-      image_time=$(date +%s -d "${image_time:-0-01-01}")
+      files_response="$(curl -LH "$TKN" "$API_URL/packages/$package_id/package_files")"
+      file_time="$(jq -r 'map(select(.file_name == env.TOOLCHAIN_FILE))
+                          | max_by(.id) | .created_at | values' <<< "$files_response")"
+      file_time=$(date +%s -d "${file_time:-0-01-01}")
 
       # get timestamp of the latest commit in $COMMIT_PATH of $COMMIT_REF; -> "" if no commits
       commit_info_url="$API_URL/repository/commits?ref_name=$COMMIT_REF&path=$COMMIT_PATH"
@@ -46,7 +50,7 @@ check:
       commit_time=$(date +%s -d "${commit_time:-0-01-01}")
 
       # new commits to $COMMIT_PATH since last image build? trigger rebuild
-      if (( commit_time > image_time )); then
+      if (( commit_time > file_time )); then
         curl -F "token=$CI_JOB_TOKEN" \
              -F "variables[REBUILD]=1" \
              -F "ref=$COMMIT_REF" \
@@ -59,7 +63,7 @@ build toolchain:
   image: ubuntu:22.04
   artifacts:
     expire_in: 1 h
-    paths: [ toolchain.tzst ]
+    paths: [ $TOOLCHAIN_FILE ]
   rules:
     - if: $REBUILD
   script:
@@ -94,7 +98,7 @@ build toolchain:
     - ./clean_sources.sh
     - ./build_toolchain.sh
 
-    - tar -I "zstd -9 -T0" -cf ../toolchain.tzst ../toolchain/out
+    - tar -I "zstd -9 -T0" -cf ../"$TOOLCHAIN_FILE" ../toolchain/out
 
 
 publish package:
@@ -102,24 +106,23 @@ publish package:
   image: bash
   rules:
     - if: $REBUILD
-  variables:
-    PACKAGE_NAME: "toolchain"
-    PACKAGE_VERSION: "latest"
   script:
     - |
       apk add --no-cache curl jq
 
-      file="toolchain.tzst"
-
-      upload_url="$API_URL/packages/generic/$PACKAGE_NAME/$PACKAGE_VERSION/$(basename -- "$file")?select=package_file"
-      upload_response="$(curl -LH "$TKN" -T "$file" "$upload_url")"
+      upload_url="$API_URL/packages/generic/$PACKAGE_NAME/$PACKAGE_VERSION/$TOOLCHAIN_FILE?select=package_file"
+      upload_response="$(curl -LH "$TKN" -T "$TOOLCHAIN_FILE" "$upload_url")"
       file_id="$(jq -r '.id | values' <<< "$upload_response")"
+      (( file_id > 0 )) || { echo "Upload failed"; exit 1; }
 
-      package_response="$(curl -LH "$TKN" -G -d "package_type=generic" -d "package_name=$PACKAGE_NAME" "$API_URL/packages")"
-      package_id="$(jq -r '.[] | select(.version == $v) | .id | values' --arg v "$PACKAGE_VERSION" <<< "$package_response")"
+      package_response="$(curl -LH "$TKN" -G -d "package_type=generic" \
+                                             -d "package_name=$PACKAGE_NAME" "$API_URL/packages")"
+      package_id="$(jq -r '.[] | select(.version == env.PACKAGE_VERSION)
+                               | .id | values' <<< "$package_response")"
 
       files_response="$(curl -LH "$TKN" "$API_URL/packages/$package_id/package_files")"
-      package_files="$(jq -r '.[] | select(.file_name == $f) | .id | values' --arg f "$(basename -- "$file")" <<< "$files_response")"
+      package_files="$(jq -r '.[] | select(.file_name == env.TOOLCHAIN_FILE)
+                                  | .id | values' <<< "$files_response")"
 
       while IFS= read -r old_file_id; do
         if [[ -n $old_file_id && $old_file_id != $file_id ]]; then
