@@ -8,7 +8,9 @@ workflow:
     - when: never
 
 variables:
-  GIT_STRATEGY: none
+  GIT_DEPTH: 3
+  API_URL: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}"
+  TKN: "JOB-TOKEN: $CI_JOB_TOKEN"
   IMAGE_TAG: latest
 
 stages:
@@ -20,35 +22,34 @@ check:
   stage: check
   image: bash
   variables:
+    GIT_STRATEGY: none
     COMMIT_PATH: "toolchain"
     COMMIT_REF: "$CI_DEFAULT_BRANCH"
-    API_URL: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}"
-    CURL_CMD: "curl -sL -H 'JOB-TOKEN: $CI_JOB_TOKEN'"
   rules:
-    - if: $REBUILD == null
-    - if: $REBUILD_CONTAINER == null
+    - if: $REBUILD == null && $REBUILD_CONTAINER == null
   script:
-    - apk add --no-cache coreutils curl jq
+    - |
+      apk add --no-cache coreutils curl jq
 
-    # get container repository id; -> "" if no repo
-    - container_repo=$($CURL_CMD "${API_URL}/registry/repositories" | jq -r '.[0].id | values')
+      # get container repository id; -> "" if no repo
+      container_repo=$(curl -L "$API_URL/registry/repositories" | jq -r '.[0].id | values')
 
-    # get timestamp of the latest image; -> "" if no image
-    - image_info_url="${API_URL}/registry/repositories/${container_repo}/tags/${IMAGE_TAG}"
-    - image_time=$($CURL_CMD "$image_info_url" | jq -r '.created_at | values')
-    - image_time=$(date +%s -d "${image_time:-0-01-01}")
+      # get timestamp of the latest image; -> "" if no image
+      image_info_url="$API_URL/registry/repositories/$container_repo/tags/$IMAGE_TAG"
+      image_time=$(curl -L "$image_info_url" | jq -r '.created_at | values')
+      image_time=$(date +%s -d "${image_time:-0-01-01}")
 
-    # get timestamp of the latest commit in $COMMIT_PATH of $COMMIT_REF; -> "" if no commits
-    - commit_info_url="${API_URL}/repository/commits?ref_name=${COMMIT_REF}&path=${COMMIT_PATH}"
-    - commit_time=$($CURL_CMD "$commit_info_url" | jq -r '.[0].committed_date | values')
-    - commit_time=$(date +%s -d "${commit_time:-0-01-01}")
+      # get timestamp of the latest commit in $COMMIT_PATH of $COMMIT_REF; -> "" if no commits
+      commit_info_url="$API_URL/repository/commits?ref_name=$COMMIT_REF&path=$COMMIT_PATH"
+      commit_time=$(curl -L "$commit_info_url" | jq -r '.[0].committed_date | values')
+      commit_time=$(date +%s -d "${commit_time:-0-01-01}")
 
-    - | # new commits to $COMMIT_PATH since last image build? trigger rebuild
+      # new commits to $COMMIT_PATH since last image build? trigger rebuild
       if (( commit_time > image_time )); then
-        $CURL_CMD -F "variables[REBUILD]=1" \
-                  -F "ref=$COMMIT_REF" \
-                  -F "token=$CI_JOB_TOKEN" \
-                  "${API_URL}/trigger/pipeline"
+        curl -F "token=$CI_JOB_TOKEN" \
+             -F "variables[REBUILD]=1" \
+             -F "ref=$COMMIT_REF" \
+             "$API_URL/trigger/pipeline"
       fi
 
 
@@ -56,7 +57,7 @@ build toolchain:
   stage: build toolchain
   image: ubuntu:22.04
   artifacts:
-    expire_in: 3 mos
+    expire_in: 1 h
     paths: [ toolchain.tzst ]
   rules:
     - if: $REBUILD
@@ -88,16 +89,43 @@ build toolchain:
           xz-utils \
           zstd
 
-    # sparse checkout
-    - git clone -n --depth 1 --filter tree:0 "$CI_REPOSITORY_URL" .
-    - git sparse-checkout set --no-cone /toolchain /trunk/configs /trunk/libc /trunk/linux-3.4.x
-    - git checkout
-    
     - cd toolchain
     - ./clean_sources.sh
     - ./build_toolchain.sh
 
     - tar -I "zstd -9 -T0" -cf ../toolchain.tzst ../toolchain/out
+
+
+publish package:
+  stage: publish package
+  image: bash
+  rules:
+    - if: $REBUILD
+  variables:
+    PACKAGE_NAME: "toolchain"
+    PACKAGE_VERSION: "latest"
+  script:
+    - |
+      apk add --no-cache curl jq
+
+      file="toolchain.tzst"
+
+      upload_url="$API_URL/packages/generic/$PACKAGE_NAME/$PACKAGE_VERSION/$(basename -- "$file")?select=package_file"
+      upload_response="$(curl -LH "$TKN" -T "$file" "$upload_url")"
+      file_id="$(jq -r '.id | values' <<< "$upload_response")"
+
+      package_response="$(curl -LH "$TKN" -G -d "package_type=generic" -d "package_name=$PACKAGE_NAME" "$API_URL/packages")"
+      package_id="$(jq -r '.[] | select(.version == $v) | .id | values' --arg v "$PACKAGE_VERSION" <<< "$package_response")"
+
+      files_response="$(curl -LH "$TKN" "$API_URL/packages/$package_id/package_files")"
+      package_files="$(jq -r '.[] | select(.file_name == $f) | .id | values' --arg f "$(basename -- "$file")" <<< "$files_response")"
+
+      while IFS= read -r old_file_id; do
+        if [[ -n $old_file_id && $old_file_id != $file_id ]]; then
+          delete_url="$API_URL/packages/$package_id/package_files/$old_file_id"
+          delete_response="$(curl -LH "$TKN" -o /dev/null -w "%{http_code}" -X DELETE "$delete_url")"
+        fi
+      done <<< "$package_files"
 
 
 build image:
@@ -106,19 +134,8 @@ build image:
   services:
     - docker:dind
   rules:
-    - if: $REBUILD
     - if: $REBUILD_CONTAINER
   script:
-    - apk add --no-cache git zstd
-
-    # sparse checkout
-    - git clone -n --depth 1 --filter tree:0 "$CI_REPOSITORY_URL"
-    - cd "$CI_PROJECT_NAME"
-    - git sparse-checkout set --no-cone /Dockerfile
-    - git checkout
-
-#    - unzstd -c ../toolchain.tzst | tar -xf -
-
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker build -t "$CI_REGISTRY_IMAGE:$IMAGE_TAG" -f Dockerfile .
     - docker push "$CI_REGISTRY_IMAGE:$IMAGE_TAG"
