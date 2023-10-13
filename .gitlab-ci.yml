@@ -32,6 +32,18 @@ check:
     - |
       apk add --no-cache coreutils curl jq
 
+      echo "Getting container repository ID" # -> "" if no repo
+      container_repo=$(curl -L "$API_URL/registry/repositories" | jq -r '.[0].id | values')
+
+      if [[ -z $container_repo ]]; then
+        echo "No container repository found, creating container image"
+        echo "It will be available as $CI_REGISTRY_IMAGE:$IMAGE_TAG"
+        curl -F "token=$CI_JOB_TOKEN" \
+             -F "variables[BUILD_CONTAINER]=1" \
+             -F "ref=$COMMIT_REF" \
+             "$API_URL/trigger/pipeline"
+      fi
+
       echo "Getting toolchain package ID" # -> "" if no package
       package_response="$(curl -LH "$TKN" -G -d "package_type=generic" \
                                              -d "package_name=$PACKAGE_NAME" "$API_URL/packages")"
@@ -153,3 +165,4 @@ build image:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker build -t "$CI_REGISTRY_IMAGE:$IMAGE_TAG" -f Dockerfile .
     - docker push "$CI_REGISTRY_IMAGE:$IMAGE_TAG"
+    - echo "Image is available as $CI_REGISTRY_IMAGE:$IMAGE_TAG"
