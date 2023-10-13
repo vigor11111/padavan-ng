@@ -27,7 +27,7 @@ check:
     COMMIT_PATH: "toolchain"
     COMMIT_REF: "$CI_DEFAULT_BRANCH"
   rules:
-    - if: $REBUILD == null && $REBUILD_CONTAINER == null
+    - if: $BUILD_TOOLCHAIN == null && $BUILD_CONTAINER == null
   script:
     - |
       apk add --no-cache coreutils curl jq
@@ -38,7 +38,7 @@ check:
       package_id="$(jq -r '.[] | select(.version == env.PACKAGE_VERSION)
                                | .id | values' <<< "$package_response")"
 
-      echo "Getting timestamp of the latest image" # -> "" if no image
+      echo "Getting timestamp of the latest toolchain package" # -> "" if no image
       files_response="$(curl -LH "$TKN" "$API_URL/packages/$package_id/package_files")"
       file_time="$(jq -r 'map(select(.file_name == env.TOOLCHAIN_FILE))
                           | max_by(.id) | .created_at | values' <<< "$files_response")"
@@ -50,11 +50,11 @@ check:
       commit_time=$(jq -r '.[0].committed_date | values' <<< "$commit_response")
       commit_time=$(date +%s -d "${commit_time:-0-01-01}")
 
-      echo "Will rebuild toolchain if $commit_time > $file_time"
+      echo "Will rebuild toolchain if timestamp $commit_time > $file_time"
       # new commits to $COMMIT_PATH since last package build? trigger rebuild
       if (( commit_time > file_time )); then
         curl -F "token=$CI_JOB_TOKEN" \
-             -F "variables[REBUILD]=1" \
+             -F "variables[BUILD_TOOLCHAIN]=1" \
              -F "ref=$COMMIT_REF" \
              "$API_URL/trigger/pipeline"
       fi
@@ -67,7 +67,7 @@ build toolchain:
     expire_in: 1 h
     paths: [ $TOOLCHAIN_FILE ]
   rules:
-    - if: $REBUILD
+    - if: $BUILD_TOOLCHAIN
   script:
     - |
       apt update
@@ -96,18 +96,19 @@ build toolchain:
           xz-utils \
           zstd
 
-    - cd toolchain
+    - pushd toolchain
     - ./clean_sources.sh
     - ./build_toolchain.sh
+    - popd
 
-    - tar -I "zstd -9 -T0" -cf ../"$TOOLCHAIN_FILE" ../toolchain/out
+    - tar -I "zstd -9 -T0" -cf "$TOOLCHAIN_FILE" toolchain/out
 
 
 publish package:
   stage: publish package
   image: bash
   rules:
-    - if: $REBUILD
+    - if: $BUILD_TOOLCHAIN
   script:
     - |
       apk add --no-cache curl jq
@@ -117,6 +118,10 @@ publish package:
       upload_response="$(curl -LH "$TKN" -T "$TOOLCHAIN_FILE" "$upload_url")"
       file_id="$(jq -r '.id | values' <<< "$upload_response")"
       (( file_id > 0 )) || { echo "Upload failed"; exit 1; }
+
+      echo    "Package URL:"
+      echo -n "$CI_API_V4_URL/projects/${CI_PROJECT_NAMESPACE}%2F${CI_PROJECT_NAME}"
+      echo    "/packages/generic/$PACKAGE_NAME/$PACKAGE_VERSION/$TOOLCHAIN_FILE"
 
       echo "Getting old files list"
       package_response="$(curl -LH "$TKN" -G -d "package_type=generic" \
@@ -143,7 +148,7 @@ build image:
   services:
     - docker:dind
   rules:
-    - if: $REBUILD_CONTAINER
+    - if: $BUILD_CONTAINER
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker build -t "$CI_REGISTRY_IMAGE:$IMAGE_TAG" -f Dockerfile .
