@@ -5,7 +5,7 @@ workflow:
     - if: $CI_PIPELINE_SOURCE == "schedule"
 
 variables:
-  GIT_DEPTH: 3
+  GIT_DEPTH: 1
   API_URL: "$CI_API_V4_URL/projects/$CI_PROJECT_ID"
   TKN: "JOB-TOKEN: $CI_JOB_TOKEN"
   IMAGE_TAG: latest
