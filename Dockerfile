@@ -38,6 +38,7 @@ RUN apt update && \
         libflac-dev \
         libgmp3-dev \
         libid3tag0-dev \
+        libidn2-dev \
         libjpeg-dev \
         libkeyutils-dev \
         libltdl-dev \
@@ -50,6 +51,7 @@ RUN apt update && \
         libtool \
         libtool-bin \
         libudev-dev \
+        libunbound-dev \
         libvorbis-dev \
         libxml2-dev \
         locales \
