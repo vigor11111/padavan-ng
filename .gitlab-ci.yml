@@ -41,7 +41,7 @@ check:
       image_time="$(jq -r '.created_at | values' <<< "$image_response")"
       image_time="$(date +%s -d "${image_time:-0-01-01}")"
 
-      echo "Getting timestamp of the latest commit in $BUILD_CONTAINER_TRIGGER_PATH # -> "" if no commits
+      echo "Getting timestamp of the latest commit in $BUILD_CONTAINER_TRIGGER_PATH" # -> "" if no commits
       commit_response="$(curl -L -G -d "path=$BUILD_CONTAINER_TRIGGER_PATH" \
                                     -d "ref_name=$COMMIT_REF" "$API_URL/repository/commits")"
       commit_time="$(jq -r '.[0].committed_date | values' <<< "$commit_response")"
@@ -135,7 +135,6 @@ publish package:
     - if: $BUILD_TOOLCHAIN
   script:
     - |
-      set -x
       apk add --no-cache curl jq
 
       echo "Uploading $TOOLCHAIN_FILE"
