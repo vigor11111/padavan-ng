@@ -24,7 +24,8 @@ check:
   image: bash
   variables:
     GIT_STRATEGY: none
-    COMMIT_PATH: "toolchain"
+    BUILD_TOOLCHAIN_TRIGGER_PATH: "toolchain"
+    BUILD_CONTAINER_TRIGGER_PATH: "Dockerfile"
     COMMIT_REF: "$CI_DEFAULT_BRANCH"
   rules:
     - if: $BUILD_TOOLCHAIN == null && $BUILD_CONTAINER == null
@@ -35,9 +36,20 @@ check:
       echo "Getting container repository ID" # -> "" if no repo
       container_repo=$(curl -L "$API_URL/registry/repositories" | jq -r '.[0].id | values')
 
-      if [[ -z $container_repo ]]; then
-        echo "No container repository found, creating container image"
-        echo "It will be available as $CI_REGISTRY_IMAGE:$IMAGE_TAG"
+      echo "Getting timestamp of the $IMAGE_TAG image" # -> "" if no image
+      image_response="$(curl -L "$API_URL/registry/repositories/$container_repo/tags/$IMAGE_TAG")"
+      image_time=$(jq -r '.created_at | values' <<< "$image_response")
+      image_time=$(date +%s -d "${image_time:-0-01-01}")
+
+      echo "Getting timestamp of the latest commit in $BUILD_CONTAINER_TRIGGER_PATH # -> "" if no commits
+      commit_response="$(curl -L -G -d "path=$BUILD_CONTAINER_TRIGGER_PATH" \
+                                    -d "ref_name=$COMMIT_REF" "$API_URL/repository/commits")"
+      commit_time=$(jq -r '.[0].committed_date | values' <<< "$commit_response")
+      commit_time=$(date +%s -d "${commit_time:-0-01-01}")
+
+      echo "Will rebuild container image if timestamp $commit_time > $image_time"
+      # new commits to $BUILD_CONTAINER_TRIGGER_PATH since last image build? trigger rebuild
+      if (( commit_time > image_time )); then
         curl -F "token=$CI_JOB_TOKEN" \
              -F "variables[BUILD_CONTAINER]=1" \
              -F "ref=$COMMIT_REF" \
@@ -56,14 +68,14 @@ check:
                           | max_by(.id) | .created_at | values' <<< "$files_response")"
       file_time=$(date +%s -d "${file_time:-0-01-01}")
 
-      echo "Getting timestamp of the latest commit in $COMMIT_PATH" # -> "" if no commits
-      commit_response="$(curl -L -G -d "path=$COMMIT_PATH" \
+      echo "Getting timestamp of the latest commit in $BUILD_TOOLCHAIN_TRIGGER_PATH" # -> "" if no commits
+      commit_response="$(curl -L -G -d "path=$BUILD_TOOLCHAIN_TRIGGER_PATH" \
                                     -d "ref_name=$COMMIT_REF" "$API_URL/repository/commits")"
       commit_time=$(jq -r '.[0].committed_date | values' <<< "$commit_response")
       commit_time=$(date +%s -d "${commit_time:-0-01-01}")
 
       echo "Will rebuild toolchain if timestamp $commit_time > $file_time"
-      # new commits to $COMMIT_PATH since last package build? trigger rebuild
+      # new commits to $BUILD_TOOLCHAIN_TRIGGER_PATH since last package build? trigger rebuild
       if (( commit_time > file_time )); then
         curl -F "token=$CI_JOB_TOKEN" \
              -F "variables[BUILD_TOOLCHAIN]=1" \
