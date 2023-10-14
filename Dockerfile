@@ -26,7 +26,6 @@ RUN apt update && \
         git \
         gperf \
         help2man \
-        htop \
         kmod \
         libblkid-dev \
         libc-ares-dev \
