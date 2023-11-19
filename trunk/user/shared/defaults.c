@@ -224,6 +224,7 @@ struct nvram_pair router_defaults[] = {
 	{ "wl_HT_AMSDU", "0" },
 	{ "wl_HT_80211KV", "0" },
 	{ "wl_HT_80211R", "0" },		/* Fast Roaming AP 5GHz */
+	{ "wl_band_steering", "0" },		/* band steering AP 5GHz */
 	{ "wl_HT_MpduDensity", "5" },
 	{ "wl_HT_BAWinSize", "64" },
 	{ "wl_HT_AutoBA", "1" },
@@ -249,7 +250,6 @@ struct nvram_pair router_defaults[] = {
 
 #if defined (USE_WID_5G) && USE_WID_5G==7615
 	{ "wl_mumimo", "1" },
-	{ "wl_band_steering", "0" },		/* band steering AP 5GHz */
 #endif
 
 	// ApCli 5GHz
@@ -325,8 +325,8 @@ struct nvram_pair router_defaults[] = {
 	{ "rt_HT_AMSDU", "0" },
 	{ "rt_HT_80211KV", "0" },
 	{ "rt_HT_80211R", "0" },	/* Fast Roaming AP 2.4GHz */
-	{ "rt_HT_MpduDensity", "5" },
 	{ "rt_band_steering", "0" },	/* band steering AP 2.4GHz */
+	{ "rt_HT_MpduDensity", "5" },
 	{ "rt_HT_BAWinSize", "64" },
 	{ "rt_HT_AutoBA", "1" },
 	{ "rt_VgaClamp", "0" },
