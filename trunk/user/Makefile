@@ -77,7 +77,6 @@ dir_y =
 dir_n =
 dir_  =
 
-dir_y						+= ralinkiappd
 dir_y						+= busybox
 dir_y						+= iptables
 dir_$(CONFIG_FIRMWARE_INCLUDE_IPSET)		+= ipset
@@ -105,7 +104,7 @@ dir_y						+= 802.1x
 dir_y						+= wpa_supplicant
 dir_y						+= pppd
 dir_y						+= pppoe
-dir_y						+= poptop
+dir_y						+= accel-pptpd
 dir_y						+= xl2tpd
 dir_$(CONFIG_FIRMWARE_INCLUDE_RPL2TP)		+= rp-l2tp
 dir_y						+= lldt
@@ -137,10 +136,6 @@ ifdef CONFIG_BLK_DEV_SD
 dir_$(CONFIG_FIRMWARE_INCLUDE_HDPARM)		+= hdparm
 endif
 
-ifeq ($(CONFIG_PRODUCT),MT7621)
-dir_y						+= mt7621_cpufreq
-endif
-
 ifdef CONFIG_USB_SUPPORT
 dir_y						+= p910nd
 dir_y						+= usb-modeswitch
@@ -164,7 +159,6 @@ dir_$(FS_NTFS_ENABLED)				+= ntfs-3g
 dir_$(CONFIG_FIRMWARE_INCLUDE_PARTED)		+= parted
 dir_$(CONFIG_FIRMWARE_INCLUDE_FTPD)		+= vsftpd
 dir_$(CONFIG_FIRMWARE_INCLUDE_MINIDLNA)		+= minidlna
-#dir_$(CONFIG_FIRMWARE_INCLUDE_FIREFLY)		+= firefly
 dir_$(CONFIG_FIRMWARE_INCLUDE_TRANSMISSION)	+= transmission
 dir_$(CONFIG_FIRMWARE_INCLUDE_ARIA)		+= aria2
 endif

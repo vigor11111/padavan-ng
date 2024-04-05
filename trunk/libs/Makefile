@@ -22,9 +22,8 @@ dir_y =
 dir_n =
 dir_  =
 
-dir_y += libmnl
-
 LIBS_INCLUDE_LIBCAPNG=n
+LIBS_INCLUDE_LIBDEFLATE=n
 LIBS_INCLUDE_LIBLZO=n
 LIBS_INCLUDE_LIBGETDNS=n
 LIBS_INCLUDE_LIBYAML=n
@@ -56,14 +55,11 @@ endif
 
 ifeq ($(STORAGE_ENABLED),y)
 ifeq ($(CONFIG_FIRMWARE_INCLUDE_TRANSMISSION),y)
+LIBS_INCLUDE_LIBDEFLATE=y
 LIBS_INCLUDE_LIBEVENT=y
 LIBS_INCLUDE_LIBCURL=y
 endif
 ifeq ($(CONFIG_FIRMWARE_INCLUDE_MINIDLNA),y)
-LIBS_INCLUDE_MEDIA=y
-endif
-ifeq ($(CONFIG_FIRMWARE_INCLUDE_FIREFLY),y)
-LIBS_BUILD_SHARED=y
 LIBS_INCLUDE_MEDIA=y
 endif
 endif
@@ -87,28 +83,21 @@ ifeq ($(CONFIG_FIRMWARE_INCLUDE_TOR),y)
 LIBS_INCLUDE_LIBEVENT=y
 endif
 
-ifneq (,$(filter y,$(CONFIG_FIRMWARE_INCLUDE_PRIVOXY) $(CONFIG_FIRMWARE_ENABLE_DNSMASQ_REGEX)))
-LIBS_INCLUDE_LIBPCRE=y
-endif
-
 dir_$(LIBS_INCLUDE_LIBCAPNG)			+= libcapng
+dir_$(LIBS_INCLUDE_LIBDEFLATE)			+= libdeflate
 dir_y						+= libz
 dir_$(LIBS_INCLUDE_LIBLZO)			+= liblzo
-dir_y						+= libssl3.1
-#dir_y						+= libssl3
-#dir_y						+= libssl1
+dir_y						+= libssl
 dir_$(LIBS_INCLUDE_LIBUSB_0)			+= libusb
 dir_$(LIBS_INCLUDE_LIBUSB_1)			+= libusb-1.0
 dir_y						+= libnfnetlink
 dir_y						+= libconfuse
-
-# ipset shared libs
-#dir_$(CONFIG_FIRMWARE_INCLUDE_IPSET)		+= libmnl
+dir_y						+= libmnl
 
 # tcpdump shared libs
 dir_$(CONFIG_FIRMWARE_INCLUDE_TCPDUMP)		+= libpcap
 
-# minidlna and firefly shared libs
+# minidlna shared libs
 dir_$(LIBS_INCLUDE_MEDIA)			+= libid3tag
 dir_$(LIBS_INCLUDE_MEDIA)			+= libav
 dir_$(CONFIG_FIRMWARE_INCLUDE_MINIDLNA)		+= libexif
@@ -135,8 +124,8 @@ dir_$(LIBS_INCLUDE_LIBCURL)			+= libcurl
 # aria2 shared libs
 dir_$(CONFIG_FIRMWARE_INCLUDE_ARIA)		+= libxml2
 
-# REGEX shared lib (privoxy and dnsmasq)
-dir_$(LIBS_INCLUDE_LIBPCRE)			+= libpcre
+# privoxy shared libs
+dir_$(CONFIG_FIRMWARE_INCLUDE_PRIVOXY)		+= libpcre
 
 # dnscrypt extra libs
 dir_$(CONFIG_FIRMWARE_INCLUDE_DNSCRYPT)		+= libsodium

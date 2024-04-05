@@ -340,6 +340,21 @@ start_dns_dhcpd(int is_ap_mode)
 		fprintf(fp, "listen-address=%s\n", ipaddr);
 	}
 
+	if (!is_ap_mode && nvram_match("dhcp_filter_aaaa", "1")) {
+		/* Don't include IPv6 addresses in DNS answers */
+		fprintf(fp, "filter-AAAA\n");
+	}
+
+	if (!is_ap_mode && nvram_match("dhcp_allservers", "1")) {
+		/* DNS queries for all servers */
+		fprintf(fp, "all-servers\n");
+	}
+
+	if (!is_ap_mode && nvram_match("dhcp_strictorder", "1")) {
+		/* Name servers strictly in the order listed */
+		fprintf(fp, "strict-order\n");
+	}
+
 	if (!is_ap_mode && (nvram_match("doh_enable", "1") || nvram_match("stubby_enable", "1") || nvram_match("dnscrypt_enable", "1"))) {
 		/* don't use resolv-file to resovle DNS queries if doh_proxy or stubby or dnscrypt-proxy is enabled */
 		fprintf(fp, "no-resolv\n");
@@ -435,6 +450,11 @@ start_dns_dhcpd(int is_ap_mode)
 #if defined(APP_SMBD) || defined(APP_NMBD)
 		else if (nvram_get_int("wins_enable"))
 			fprintf(fp, "dhcp-option=tag:%s,%d,%s\n", DHCPD_RANGE_DEF_TAG, 44, ipaddr);
+#endif
+#if defined(APP_VLMCSD)
+		int vlmcsd_mode = nvram_get_int("vlmcsd_enable");
+		if ( vlmcsd_mode == 1)	
+			fprintf(fp, "srv-host=%s.%s,%s,%d\n", "_VLMCS", "_tcp", ipaddr, 1688);
 #endif
 		if (i_verbose == 0 || i_verbose == 2)
 			fprintf(fp, "quiet-dhcp\n");

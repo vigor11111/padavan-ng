@@ -52,8 +52,6 @@ function initial(){
 			showhide_div("row_ldpc", 1);
 		} else if (wid==7615){
 			showhide_div("row_ldpc", 1);
-			showhide_div("row_80211kv", 1);
-			showhide_div("row_80211r", 1);
 		}
 	}
 
@@ -76,7 +74,7 @@ function initial(){
 	if (!support_2g_inic_mii())
 		showhide_div('row_mrate', 0);
 
-    if (support_2g_band_steering())
+	if (support_2g_band_steering())
 		showhide_div("row_band_steering", 1);
 
 	if (support_2g_turbo_qam())
@@ -388,7 +386,7 @@ function done_validating(action){
                                               </select>
                                             </td>
                                         </tr>
-                                        <tr id="row_band_steering" style="display:none">
+<!--                                        <tr id="row_band_steering" style="display:none">
                                             <th><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this, 3, 20);"><#WLANConfig11n_band_steering_itemname#></a></th>
                                             <td>
                                                 <select name="rt_band_steering" class="input">
@@ -396,7 +394,7 @@ function done_validating(action){
                                                     <option value="1" <% nvram_match_x("","rt_band_steering", "1","selected"); %>><#btn_Enable#></option>
                                                 </select>
                                             </td>
-                                        </tr>
+                                        </tr> -->
                                         <tr id="row_turbo_qam" style="display:none">
                                             <th><#WLANConfig11b_x_turbo_qam#></th>
                                             <td>
@@ -410,26 +408,8 @@ function done_validating(action){
                                             <th><#WLANConfig11b_x_rt_airtimefairness#></th>
                                             <td>
                                                 <select name="rt_airtimefairness" class="input">
-                                                    <option value="0" <% nvram_match_x("","rt_airtimefairness", "0","selected"); %>><#btn_Disable#> (*)</option>
-                                                    <option value="1" <% nvram_match_x("","rt_airtimefairness", "1","selected"); %>><#btn_Enable#></option>
-                                                </select>
-                                            </td>
-                                        </tr>
-					<tr id="row_80211kv">
-                                            <th><#WLANConfig11n_80211kv#></th>
-                                            <td>
-                                                <select name="rt_HT_80211KV" class="input">
-                                                    <option value="0" <% nvram_match_x("", "rt_HT_80211KV", "0", "selected"); %>><#btn_Disable#> (*)</option>
-                                                    <option value="1" <% nvram_match_x("", "rt_HT_80211KV", "1", "selected"); %>><#btn_Enable#></option>
-                                                </select>
-                                            </td>
-                                        </tr>
-					<tr id="row_80211r">
-                                            <th><#WLANConfig11n_80211r#></th>
-                                            <td>
-                                                <select name="rt_HT_80211R" class="input">
-                                                    <option value="0" <% nvram_match_x("", "rt_HT_80211R", "0", "selected"); %>><#btn_Disable#> (*)</option>
-                                                    <option value="1" <% nvram_match_x("", "rt_HT_80211R", "1", "selected"); %>><#btn_Enable#></option>
+                                                    <option value="0" <% nvram_match_x("","rt_airtimefairness", "0","selected"); %>><#btn_Disable#></option>
+                                                    <option value="1" <% nvram_match_x("","rt_airtimefairness", "1","selected"); %>><#btn_Enable#> (*)</option>
                                                 </select>
                                             </td>
                                         </tr>

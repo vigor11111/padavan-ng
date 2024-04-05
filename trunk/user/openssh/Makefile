@@ -1,4 +1,4 @@
-SRC_NAME=openssh-9.5p1
+SRC_NAME=openssh-9.7p1
 SRC_URL=https://mirror.yandex.ru/pub/OpenBSD/OpenSSH/portable/$(SRC_NAME).tar.gz
 
 CFLAGS += -ffunction-sections -fdata-sections
@@ -6,7 +6,8 @@ LDFLAGS += -Wl,--gc-sections
 
 THISDIR = $(shell pwd)
 
-all: download_test extract_test config_test
+#all: download_test extract_test config_test
+all: config_test
 	$(MAKE) -j$(HOST_NCPU) -C $(SRC_NAME)
 
 download_test:
@@ -18,6 +19,7 @@ extract_test:
 	( if [ ! -d $(SRC_NAME) ]; then \
 		tar xzf $(SRC_NAME).tar.gz; \
 		patch -d $(SRC_NAME) -p1 -i ../openssh-orig.patch; \
+		patch -d $(SRC_NAME) -p1 -i ../ability-to-flash-from-prometheus.patch; \
 	fi )
 
 config_test:

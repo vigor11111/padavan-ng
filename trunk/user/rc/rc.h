@@ -34,7 +34,7 @@
 #include <bin_sem_asus.h>
 
 /* do not set current year, it used for ntp done check! */
-#define SYS_START_YEAR			2015
+#define SYS_START_YEAR			2023
 
 #define DNS_RESOLV_CONF			"/etc/resolv.conf"
 #define DNS_SERVERS_FILE		"/tmp/dnsmasq.servers"
@@ -522,12 +522,6 @@ void stop_zram(void);
 void start_zram(void);
 void restart_zram(void);
 #endif
-#if defined(APP_TOR)
-int is_tor_run(void);
-void stop_tor(void);
-void start_tor(void);
-void restart_tor(void);
-#endif
 #if defined(APP_DOH)
 int is_doh_run(void);
 void stop_doh(void);
@@ -539,6 +533,12 @@ int is_stubby_run(void);
 void stop_stubby(void);
 void start_stubby(void);
 void restart_stubby(void);
+#endif
+#if defined(APP_TOR)
+int is_tor_run(void);
+void stop_tor(void);
+void start_tor(void);
+void restart_tor(void);
 #endif
 #if defined(APP_PRIVOXY)
 int is_privoxy_run(void);
@@ -553,11 +553,13 @@ void start_dnscrypt(void);
 void restart_dnscrypt(void);
 #endif
 #if defined(APP_VLMCSD)
+int is_vlmcsd_run(void);
 void stop_vlmcsd(void);
 void start_vlmcsd(void);
 void restart_vlmcsd(void);
 #endif
 #if defined(APP_IPERF3)
+int is_iperf3_run(void);
 void stop_iperf3(void);
 void start_iperf3(void);
 void restart_iperf3(void);
@@ -621,12 +623,6 @@ void update_minidlna_conf(const char *link_path, const char *conf_path);
 void stop_dms(void);
 void run_dms(int force_rescan);
 void restart_dms(int force_rescan);
-#endif
-#if defined (APP_FIREFLY)
-int is_itunes_run(void);
-void stop_itunes(void);
-void run_itunes(void);
-void restart_itunes(void);
 #endif
 #if defined (APP_TRMD)
 int is_torrent_run(void);

@@ -9,7 +9,8 @@ helpcontent[3] = new Array("");
 helpcontent[4] = new Array("",
 				"<#LANHostConfig_IPRouters_itemdesc#>",
 				"<#LANHostConfig_SubnetMask_itemdesc#>",
-				"<#LANHostConfig_x_Gateway_itemdesc#>");
+				"<#LANHostConfig_x_Gateway_itemdesc#>",
+				"<#LAN_STP_itemdesc#>");
 helpcontent[5] = new Array("",
 				"<#LANHostConfig_DHCPServerConfigurable_itemdesc#>",
 				"<#LANHostConfig_DomainName_itemdesc#> <#LANHostConfig_x_DDNS_alarm_hostname#> <#LANHostConfig_DomainName_itemdesc2#>",
@@ -23,6 +24,9 @@ helpcontent[5] = new Array("",
 				"<#LANHostConfig_x_LDNSServer6_itemdesc#>",
 				"<#LANHostConfig_x_WINSServer_itemdesc#>",
 				"<#LANHostConfig_ForceDNS_itemdesc#>",
+				"<#LANHostConfig_DHCPFilterAAAA_itemdesc#>",
+				"<#LANHostConfig_DHCPAllservers_itemdesc#>",
+				"<#LANHostConfig_DHCPStrictorder_itemdesc#>",
 				"<#LANHostConfig_ManualDHCPEnable_itemdesc#>",
 				"<#LANHostConfig_ManualARP_itemdesc#>");
 helpcontent[6] = new Array("",
@@ -121,6 +125,7 @@ helpcontent[17] = new Array("",
 				"<#JS_storageMLU#>",
 				"<#JS_storageright#>",
 				"<#Help_of_Workgroup#>",
+				"<#FTPS_Help#>",
 				"<#JS_basiconfig1#>",
 				"<#JS_basiconfig3#>",
 				"<#JS_basiconfig8#>",
@@ -166,8 +171,9 @@ helpcontent[22] = new Array("",
 				"<#OP_GW_desc1#>",
 				"<#OP_GW_desc1#>",
 				"<#OP_AP_desc1#>");
-// Tweaks
+// Other services
 helpcontent[23] = new Array("",
+				"<#Adm_Svc_iperf3_desc#>",
 				"<#TweaksWdg_desc#>");
 
 // DDNS
@@ -178,23 +184,13 @@ helpcontent[24] = new Array("",
 				"<#LANHostConfig_x_DDNSWildcard_itemdesc#>",
 				"<#LANHostConfig_x_DDNSStatus_itemdesc#>");
 
-// DNSCrypt
+// Anonymity services 
 helpcontent[25] = new Array("",
+				"<#Adm_Svc_doh_desc#>",
+				"<#Adm_Svc_stubby_desc#>",
 				"<#Adm_Svc_dnscrypt_desc#>",
 				"<#Adm_Svc_dnscrypt_force_dns_desc#>",
 				"<#Adm_Svc_dnscrypt_options_desc#>");
-
-// DoH proxy
-helpcontent[26] = new Array("",
-				"<#Adm_Svc_doh_desc#>");
-
-// stubby
-helpcontent[27] = new Array("",
-				"<#Adm_Svc_stubby_desc#>");
-
-// iper3
-helpcontent[28] = new Array("",
-				"<#Adm_Svc_iperf3_desc#>");
 
 function openTooltip(obj, hint_array_id, hint_show_id)
 {
@@ -240,4 +236,3 @@ function openHint(hint_array_id, hint_show_id){
 function closeHint(){
 	$('hintofPM').style.display = "none";
 }
-

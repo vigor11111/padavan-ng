@@ -824,7 +824,7 @@ LED_CONTROL(int gpio_led, int flag)
 	{
 		if (is_soft_blink)
 			cpu_gpio_led_enabled(gpio_led, (flag == LED_OFF) ? 0 : 1);
-		
+
 		cpu_gpio_set_pin(gpio_led, flag);
 	}
 }
@@ -1009,7 +1009,7 @@ handle_notifications(void)
 	{
 		struct dirent *entry;
 		FILE *test_fp;
-		
+
 		entry = readdir(directory);
 		if (!entry)
 			break;
@@ -1017,13 +1017,13 @@ handle_notifications(void)
 			continue;
 		if (strcmp(entry->d_name, "..") == 0)
 			continue;
-		
+
 		/* Remove the marker file. */
 		snprintf(notify_name, sizeof(notify_name), "%s/%s", DIR_RC_NOTIFY, entry->d_name);
 		remove(notify_name);
-		
+
 		printf("rc notification: %s\n", entry->d_name);
-		
+
 		/* Take the appropriate action. */
 		if (!strcmp(entry->d_name, RCN_RESTART_REBOOT))
 		{
@@ -1204,12 +1204,6 @@ handle_notifications(void)
 			restart_dms(0);
 		}
 #endif
-#if defined(APP_FIREFLY)
-		else if (strcmp(entry->d_name, RCN_RESTART_ITUNES) == 0)
-		{
-			restart_itunes();
-		}
-#endif
 #if defined(APP_TRMD)
 		else if (strcmp(entry->d_name, RCN_RESTART_TRMD) == 0)
 		{
@@ -1238,12 +1232,6 @@ handle_notifications(void)
 			restart_sshd();
 		}
 #endif
-#if defined(APP_TOR)
-		else if (strcmp(entry->d_name, RCN_RESTART_TOR) == 0)
-		{
-			restart_tor();
-		}
-#endif
 #if defined(APP_DOH)
 		else if (strcmp(entry->d_name, RCN_RESTART_DOH) == 0)
 		{
@@ -1254,6 +1242,12 @@ handle_notifications(void)
 		else if (strcmp(entry->d_name, RCN_RESTART_STUBBY) == 0)
 		{
 			restart_stubby();
+		}
+#endif
+#if defined(APP_TOR)
+		else if (strcmp(entry->d_name, RCN_RESTART_TOR) == 0)
+		{
+			restart_tor();
 		}
 #endif
 #if defined(APP_PRIVOXY)
@@ -1290,6 +1284,7 @@ handle_notifications(void)
 		else if (strcmp(entry->d_name, RCN_RESTART_VLMCSD) == 0)
 		{
 			restart_vlmcsd();
+			restart_dhcpd();
 		}
 #endif
 #if defined(APP_IPERF3)
@@ -1498,7 +1493,7 @@ handle_notifications(void)
 		{
 			dbg("WARNING: rc notified of unrecognized event `%s'.\n", entry->d_name);
 		}
-		
+
 		/*
 		 * If there hasn't been another request for the same event made since
 		 * we started, we can safely remove the ``action incomplete'' marker.
@@ -1677,11 +1672,6 @@ main(int argc, char **argv)
 		restart_dms(0);
 	}
 #endif
-#if defined(APP_FIREFLY)
-	else if (!strcmp(base, "run_firefly")) {
-		restart_itunes();
-	}
-#endif
 #if defined(APP_TRMD)
 	else if (!strcmp(base, "run_transmission")) {
 		restart_torrent();
@@ -1720,11 +1710,6 @@ main(int argc, char **argv)
 #if defined(APP_MINIDLNA)
 	else if (!strcmp(base, "stop_minidlna")) {
 		stop_dms();
-	}
-#endif
-#if defined(APP_FIREFLY)
-	else if (!strcmp(base, "stop_firefly")) {
-		stop_itunes();
 	}
 #endif
 #if defined(APP_TRMD)

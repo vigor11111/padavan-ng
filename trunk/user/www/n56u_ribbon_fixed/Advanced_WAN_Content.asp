@@ -161,11 +161,11 @@ function validForm(){
 		if(!validate_range(document.form.wan_pppoe_mtu, 1000, 1492)
 				|| !validate_range(document.form.wan_pppoe_mru, 1000, 1492))
 			return false;
-		
+
 		if(!validate_string(document.form.wan_pppoe_service)
 				|| !validate_string(document.form.wan_pppoe_ac))
 			return false;
-		
+
 		if(!validate_range(document.form.wan_pppoe_idletime, 0, 86400))
 			return false;
 	}
@@ -173,7 +173,7 @@ function validForm(){
 		if(!validate_range(document.form.wan_pptp_mtu, 1000, 1476)
 				|| !validate_range(document.form.wan_pptp_mru, 1000, 1500))
 			return false;
-		
+
 		if(document.form.wan_ppp_peer.value.length > 0)
 			if(!validate_string(document.form.wan_ppp_peer))
 				return false;
@@ -182,7 +182,7 @@ function validForm(){
 		if(!validate_range(document.form.wan_l2tp_mtu, 1000, 1460)
 				|| !validate_range(document.form.wan_l2tp_mru, 1000, 1500))
 			return false;
-		
+
 		if(document.form.wan_ppp_peer.value.length > 0)
 			if(!validate_string(document.form.wan_ppp_peer))
 				return false;
@@ -1014,7 +1014,7 @@ function simplyMAC(fullMAC){
                                             </td>
                                         </tr>
                                         <tr id="row_vci">
-                                            <th><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this,7,19);">Vendor Class Identifier:</a></th>
+                                            <th><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this,7,19);"><#PPPConnection_x_HostNameForISP_itemvci#></a></th>
                                             <td>
                                                 <input type="text" name="wan_vci" class="input" maxlength="128" size="32" value="<% nvram_get_x("","wan_vci"); %>" onkeypress="return is_string(this,event);"/>
                                             </td>

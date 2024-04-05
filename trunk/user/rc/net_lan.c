@@ -608,38 +608,38 @@ start_lan(int is_ap_mode, int do_wait)
 	*/
 	if (is_ap_mode) {
 		char *lan_dname = nvram_safe_get("lan_domain");
-		
+
 		create_hosts_lan(lan_ipaddr, lan_dname);
-		
+
 		if (nvram_match("lan_proto_x", "1")) {
-			
+
 			symlink("/sbin/rc", SCRIPT_UDHCPC_LAN);
-			
+
 			/* early fill XXX_t fields */
 			update_lan_status(0);
-			
+
 			/* wait PHY ports link ready */
 			if (do_wait)
 				sleep(1);
-			
+
 			/* di wakeup after 60 secs */
 			notify_run_detect_internet(60);
-			
+
 			/* start dhcp daemon */
 			start_udhcpc_lan(lan_ifname);
 		} else {
-			
+
 			/* manual config lan gateway and dns */
 			lan_up_manual(lan_ifname, lan_dname);
-			
+
 			/* di wakeup after 2 secs */
 			notify_run_detect_internet(2);
 		}
 	} else {
-		
+
 		/* install lan specific static routes */
 		add_static_lan_routes(lan_ifname);
-		
+
 		/* fill XXX_t fields */
 		update_lan_status(0);
 	}
@@ -659,15 +659,15 @@ stop_lan(int is_ap_mode)
 
 	if (is_ap_mode) {
 		notify_pause_detect_internet();
-		
+
 		kill_services(svcs, 3, 1);
 	} else {
 		char *lan_ip = nvram_safe_get("lan_ipaddr_t");
-		
+
 		/* flush conntrack table (only old LAN IP records) */
 		if (is_valid_ipv4(lan_ip))
 			flush_conntrack_table(lan_ip);
-		
+
 		/* Remove static routes */
 		clear_if_route4(IFNAME_BR);
 	}
@@ -735,7 +735,7 @@ full_restart_lan(void)
 			br_set_stp(IFNAME_BR, 1);
 			br_set_fd(IFNAME_BR, 15);
 		}
-		
+
 		if (is_wan_err) {
 			full_restart_wan();
 			start_vpn_server();
@@ -765,7 +765,6 @@ full_restart_lan(void)
 	start_networkmap(1);
 
 	/* force httpd logout */
-	system("/usr/bin/iappd.sh restart");
 	doSystem("killall %s %s", "-SIGUSR1", "httpd");
 }
 
@@ -790,22 +789,22 @@ lan_up_manual(char *lan_ifname, char *lan_dname)
 	if (fp) {
 		if (strlen(lan_dname) > 0)
 			fprintf(fp, "domain %s\n", lan_dname);
-		
+
 		dns_ip = nvram_safe_get("lan_dns1");
 		if (is_valid_ipv4(dns_ip)) {
 			fprintf(fp, "nameserver %s\n", dns_ip);
 			dns_count++;
 		}
-		
+
 		dns_ip = nvram_safe_get("lan_dns2");
 		if (is_valid_ipv4(dns_ip)) {
 			fprintf(fp, "nameserver %s\n", dns_ip);
 			dns_count++;
 		}
-		
+
 		if (!dns_count && is_valid_ipv4(gateway_ip))
 			fprintf(fp, "nameserver %s\n", gateway_ip);
-		
+
 		fclose(fp);
 	}
 
@@ -834,14 +833,14 @@ lan_up_auto(char *lan_ifname, char *lan_gateway, char *lan_dname)
 	if (fp) {
 		if (strlen(lan_dname) > 0)
 			fprintf(fp, "domain %s\n", lan_dname);
-		
+
 		if (nvram_get_int("lan_dns_x") == 0) {
 			dns_ip = nvram_safe_get("lan_dns1");
 			if (is_valid_ipv4(dns_ip)) {
 				fprintf(fp, "nameserver %s\n", dns_ip);
 				dns_count++;
 			}
-			
+
 			dns_ip = nvram_safe_get("lan_dns2");
 			if (is_valid_ipv4(dns_ip)) {
 				fprintf(fp, "nameserver %s\n", dns_ip);
@@ -855,7 +854,7 @@ lan_up_auto(char *lan_ifname, char *lan_gateway, char *lan_dname)
 				}
 			}
 		}
-		
+
 		if (!dns_count && is_valid_ipv4(lan_gateway))
 			fprintf(fp, "nameserver %s\n", lan_gateway);
 		
@@ -910,7 +909,7 @@ update_lan_status(int is_auto)
 		nvram_set_temp("lan_ipaddr_t", nvram_safe_get("lan_ipaddr"));
 		nvram_set_temp("lan_netmask_t", nvram_safe_get("lan_netmask"));
 		nvram_set_temp("lan_domain_t", nvram_safe_get("lan_domain"));
-		
+
 		if (!get_ap_mode()) {
 			if (is_dhcpd_enabled(0)) {
 				if (nvram_invmatch("dhcp_gateway_x", ""))
@@ -988,16 +987,16 @@ udhcpc_lan_bound(char *lan_ifname, int is_renew)
 		char *lan_ipmask  = nvram_safe_get(strcat_r(prefix, "netmask_t", tmp));
 		char *lan_gateway = nvram_safe_get(strcat_r(prefix, "gateway_t", tmp));
 		char *lan_domain  = nvram_safe_get(strcat_r(prefix, "domain_t", tmp));
-		
+
 		if (ip_changed)
 			ifconfig(lan_ifname, IFUP, "0.0.0.0", NULL);
-		
+
 		ifconfig(lan_ifname, IFUP, lan_ipaddr, lan_ipmask);
-		
+
 		create_hosts_lan(lan_ipaddr, lan_domain);
-		
+
 		lan_up_auto(lan_ifname, lan_gateway, lan_domain);
-		system("/usr/bin/iappd.sh restart");
+
 		logmessage("DHCP LAN Client", "%s, IP: %s/%s, GW: %s, lease time: %d",
 			udhcpc_lan_state, lan_ipaddr, lan_ipmask, lan_gateway, lease_dur);
 	}
@@ -1052,7 +1051,9 @@ udhcpc_lan_main(int argc, char **argv)
 int 
 start_udhcpc_lan(char *lan_ifname)
 {
-	char *lan_hostname = get_our_hostname();
+	char lan_hostname[26] = "hostname:";
+	size_t remaining_space = sizeof(lan_hostname) - strlen(lan_hostname) - 1;
+	strncat(lan_hostname, get_our_hostname(), remaining_space);
 	char *dhcp_argv[] = {
 		"/sbin/udhcpc",
 		"-i", lan_ifname,
@@ -1061,7 +1062,7 @@ start_udhcpc_lan(char *lan_ifname)
 		"-t4",
 		"-T4",
 		"-d", /* Background after run (new patch for udhcpc) */
-		"-H", lan_hostname,
+		"-x", lan_hostname,
 		NULL
 	};
 	

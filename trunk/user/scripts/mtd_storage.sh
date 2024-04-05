@@ -244,25 +244,12 @@ func_fill()
 #modprobe ip_set_bitmap_ip
 #modprobe ip_set_list_set
 #modprobe xt_set
-echo 4096 131072  6291456 > /proc/sys/net/ipv4/tcp_rmem
-echo 4194304 >/proc/sys/net/core/rmem_max
-echo 212992 > /proc/sys/net/core/rmem_default
 
 ### drop caches
 sync && echo 3 > /proc/sys/vm/drop_caches
 
-### Roaming assistant for mt76xx WiFi
-#iwpriv ra0 set KickStaRssiLow=-85
-#iwpriv ra0 set AssocReqRssiThres=-80
-#iwpriv rai0 set KickStaRssiLow=-85
-#iwpriv rai0 set AssocReqRssiThres=-80
-
-### UPnP solution when router without external IP
+### Solution for UPnP working in case no delicated (no WHITE) external IP adress
 #echo "ext_ip=1.1.1.1" >> /etc/miniupnpd.conf && killall miniupnpd && miniupnpd -f /etc/miniupnpd.conf
-
-### OpenVPN solution when the WAN connection does not have time to obtain an IP address
-#sleep 10
-#restart_vpn_client
 
 ### Mount SATA disk
 #mdev -s
@@ -306,6 +293,9 @@ EOF
 ### \$1 - WAN action (up/down)
 ### \$2 - WAN interface name (e.g. eth3 or ppp0)
 ### \$3 - WAN IPv4 address
+
+### Solution for UPnP working in case no delicated (no WHITE) external IP adress
+#echo "ext_ip=1.1.1.1" >> /etc/miniupnpd.conf && killall miniupnpd && miniupnpd -f /etc/miniupnpd.conf
 
 EOF
 		chmod 755 "$script_postw"
@@ -482,22 +472,16 @@ dhcp-option=252,"\n"
 
 ### Enable built-in TFTP server
 #enable-tftp
-
 ### Set the root directory for files available via TFTP.
 #tftp-root=/opt/srv/tftp
-
 ### Make the TFTP server more secure
 #tftp-secure
 
 ### Set the boot filename for netboot/PXE
 #dhcp-boot=pxelinux.0
 
-### Use dnsmasq configuration recommendation
-bogus-priv
-no-negcache
-clear-on-reload
+### Do NOT forward queries with no domain part
 domain-needed
-all-servers
 
 ### Use time server update bypassing DoT/DoH
 server=/time.in.ua/1.1.1.1

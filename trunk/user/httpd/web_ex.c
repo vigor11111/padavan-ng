@@ -2043,11 +2043,6 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 #else
 	int found_app_dlna = 0;
 #endif
-#if defined(APP_FIREFLY)
-	int found_app_ffly = 1;
-#else
-	int found_app_ffly = 0;
-#endif
 #if defined(APP_TRMD)
 	int found_app_trmd = 1;
 #else
@@ -2078,6 +2073,11 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 #else
 	int found_app_ftpd = 0;
 #endif
+#if defined(APP_FTPD_SSL)
+	int found_app_ftpd_ssl = 1;
+#else
+	int found_app_ftpd_ssl = 0;
+#endif
 #if defined(APP_RPL2TP)
 	int found_app_l2tp = 1;
 #else
@@ -2098,11 +2098,6 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 #else
 	int found_app_sshd = 0;
 #endif
-#if defined(APP_TOR)
-	int found_app_tor = 1;
-#else
-	int found_app_tor = 0;
-#endif
 #if defined(APP_DOH)
 	int found_app_doh = 1;
 #else
@@ -2112,6 +2107,11 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 	int found_app_stubby = 1;
 #else
 	int found_app_stubby = 0;
+#endif
+#if defined(APP_TOR)
+	int found_app_tor = 1;
+#else
+	int found_app_tor = 0;
 #endif
 #if defined(APP_PRIVOXY)
 	int found_app_privoxy = 1;
@@ -2215,7 +2215,9 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 #else
 	int has_openssl_ec = 0;
 #endif
+
 	int has_ddns_ssl = 1;
+
 #if defined (USE_RT3352_MII)
 	int has_inic_mii = 1;
 #else
@@ -2285,20 +2287,20 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 		"function found_utl_hdparm() { return %d;}\n"
 		"function found_app_ovpn() { return %d;}\n"
 		"function found_app_dlna() { return %d;}\n"
-		"function found_app_ffly() { return %d;}\n"
 		"function found_app_torr() { return %d;}\n"
 		"function found_app_aria() { return %d;}\n"
 		"function found_app_nfsd() { return %d;}\n"
 		"function found_app_smbd() { return %d;}\n"
 		"function found_app_nmbd() { return %d;}\n"
 		"function found_app_ftpd() { return %d;}\n"
+		"function found_app_ftpd_ssl() { return %d;}\n"
 		"function found_app_l2tp() { return %d;}\n"
 		"function found_srv_u2ec() { return %d;}\n"
 		"function found_srv_lprd() { return %d;}\n"
 		"function found_app_sshd() { return %d;}\n"
-		"function found_app_tor() { return %d;}\n"
 		"function found_app_doh() { return %d;}\n"
 		"function found_app_stubby() { return %d;}\n"
+		"function found_app_tor() { return %d;}\n"
 		"function found_app_privoxy() { return %d;}\n"
 		"function found_app_dnscrypt() { return %d;}\n"
 		"function found_support_wpad() { return %d;}\n"
@@ -2309,20 +2311,20 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 		found_utl_hdparm,
 		found_app_ovpn,
 		found_app_dlna,
-		found_app_ffly,
 		found_app_trmd,
 		found_app_aria,
 		found_app_nfsd,
 		found_app_smbd,
 		found_app_nmbd,
 		found_app_ftpd,
+		found_app_ftpd_ssl,
 		found_app_l2tp,
 		found_srv_u2ec,
 		found_srv_lprd,
 		found_app_sshd,
-		found_app_tor,
 		found_app_doh,
 		found_app_stubby,
+		found_app_tor,
 		found_app_privoxy,
 		found_app_dnscrypt,
 		found_support_wpad,
@@ -3170,6 +3172,17 @@ apply_cgi(const char *url, webs_t wp)
 			common_name = nvram_safe_get("lan_ipaddr_t");
 		if (get_login_safe())
 			sys_result = doSystem("/usr/bin/https-cert.sh -n '%s' -b %s -d %d", common_name, rsa_bits, days_valid);
+#endif
+		websWrite(wp, "{\"sys_result\": %d}", sys_result);
+		return 0;
+	}
+	else if (!strcmp(value, " CheckCertHTTPS "))
+	{
+		int sys_result = 1;
+#if defined(SUPPORT_FTPD_SSL)
+		struct stat stat_buf;
+		if (get_login_safe())
+			sys_result = !stat(STORAGE_HTTPSSL_DIR "/server.crt", &stat_buf) && !stat(STORAGE_HTTPSSL_DIR "/server.key", &stat_buf) ? 1 : 0;
 #endif
 		websWrite(wp, "{\"sys_result\": %d}", sys_result);
 		return 0;

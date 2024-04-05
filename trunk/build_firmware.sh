@@ -81,7 +81,7 @@ fi
 . ${ROOTDIR}/.config
 
 # remove this later
-if [ ! -f "${CONFIG_TOOLCHAIN_DIR}/mipsel-linux-uclibc/sysroot/lib/libuClibc-1.0.44.so" ] ; then
+if [ ! -f "${CONFIG_TOOLCHAIN_DIR}/mipsel-linux-uclibc/sysroot/lib/libuClibc-1.0.47.so" ] ; then
 	echo "Toolchain and uClibc are updated! Please recompile toolchain."
 	exit 1
 fi
@@ -485,7 +485,7 @@ if [ "$CONFIG_FIRMWARE_INCLUDE_CIFS" != "y" ] ; then
 	func_disable_kernel_param "CONFIG_CIFS"
 	func_disable_busybox_param "CONFIG_FEATURE_MOUNT_CIFS"
 fi
-if [ "$CONFIG_FIRMWARE_INCLUDE_SMBD" != "y" ] || [ "$CONFIG_FIRMWARE_INCLUDE_SMBD36" != "y" ]; then
+if [ "$CONFIG_FIRMWARE_INCLUDE_SMBD" != "y" ] ; then
 	func_disable_kernel_param "CONFIG_NETFILTER_FP_SMB"
 fi
 if [ "$CONFIG_FIRMWARE_INCLUDE_NFSD" != "y" -a "$CONFIG_FIRMWARE_INCLUDE_NFSC" != "y" -a "$CONFIG_FIRMWARE_INCLUDE_CIFS" != "y" ] ; then

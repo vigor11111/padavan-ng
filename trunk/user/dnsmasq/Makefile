@@ -1,4 +1,4 @@
-SRC_NAME=dnsmasq-2.89
+SRC_NAME=dnsmasq-2.90
 SRC_URL=https://thekelleys.org.uk/dnsmasq/$(SRC_NAME).tar.xz
 THISDIR = $(shell pwd)
 
@@ -13,8 +13,9 @@ ifneq ($(CONFIG_FIRMWARE_INCLUDE_IPSET),y)
 COPTS += -DNO_IPSET
 endif
 
-all: download_test extract_test
-	$(MAKE) -j$(HOST_NCPU) -C $(SRC_NAME) COPTS="$(COPTS)"
+#all: download_test extract_test
+all:
+	$(MAKE) -j$(HOST_NCPU) -C $(SRC_NAME) CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" COPTS="$(COPTS)"
 
 download_test:
 	( if [ ! -f $(SRC_NAME).tar.xz ]; then \
@@ -31,9 +32,6 @@ extract_test:
 
 clean:
 	$(MAKE) -C $(SRC_NAME) clean
-	rm -f dnsmasq
 
 romfs:
-	cp $(SRC_NAME)/src/dnsmasq .
-	$(STRIP) dnsmasq
-	$(ROMFSINST) /usr/sbin/dnsmasq
+	$(ROMFSINST) $(SRC_NAME)/src/dnsmasq /usr/sbin/dnsmasq

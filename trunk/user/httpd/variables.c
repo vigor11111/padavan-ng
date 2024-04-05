@@ -202,7 +202,7 @@
 		};
 
 	struct variable variables_Storage[] = {
-			{"computer_name", "", NULL, EVM_RESTART_DHCPD|EVM_RESTART_FTPD|EVM_RESTART_NMBD|EVM_RESTART_DMS|EVM_RESTART_ITUNES},
+			{"computer_name", "", NULL, EVM_RESTART_DHCPD|EVM_RESTART_FTPD|EVM_RESTART_NMBD|EVM_RESTART_DMS},
 #if defined(APP_SMBD)
 			{"enable_samba", "", NULL, EVM_RESTART_SMBD},
 			{"st_samba_fp", "", NULL, EVM_RESTART_SYSCTL},
@@ -218,6 +218,9 @@
 #endif
 #if defined(APP_FTPD)
 			{"enable_ftp", "", NULL, EVM_RESTART_FTPD},
+#if defined(APP_FTPD_SSL)
+			{"st_ftp_ssl_mode", "", NULL, EVM_RESTART_FTPD},
+#endif
 			{"st_ftp_mode", "", NULL, EVM_RESTART_FTPD},
 			{"st_ftp_log", "", NULL, EVM_RESTART_FTPD},
 			{"st_ftp_pmin", "", NULL, EVM_RESTART_FTPD},
@@ -241,9 +244,6 @@
 			{"dlna_src2", "", NULL, EVM_RESTART_DMS},
 			{"dlna_src3", "", NULL, EVM_RESTART_DMS},
 			{"dlna_rescan", "", NULL, EVM_RESTART_DMS},
-#endif
-#if defined(APP_FIREFLY)
-			{"apps_itunes", "", NULL, EVM_RESTART_ITUNES},
 #endif
 #if defined(APP_TRMD)
 			{"trmd_enable", "", NULL,EVM_RESTART_TRMD},
@@ -498,6 +498,9 @@
 			{"dhcp_dnsv6_x", "", NULL, EVM_RESTART_DHCPD},
 			{"dhcp_wins_x", "", NULL, EVM_RESTART_DHCPD|EVM_REAPPLY_VPNSVR},
 			{"redirect_alldns", "", NULL, EVM_RESTART_FIREWALL|EVM_RESTART_DHCPD},
+			{"dhcp_filter_aaaa", "", NULL, EVM_RESTART_DHCPD},
+			{"dhcp_allservers", "", NULL, EVM_RESTART_DHCPD},
+			{"dhcp_strictorder", "", NULL, EVM_RESTART_DHCPD},
 			{"dhcp_verbose", "", NULL, EVM_RESTART_DHCPD},
 			{"dhcp_static_x", "", NULL, EVM_RESTART_DHCPD},
 			{"dhcp_static_arp", "", NULL, EVM_RESTART_DHCPD},
@@ -520,25 +523,25 @@
 			{"telnetd", "", NULL, EVM_RESTART_TELNETD},
 			{"sshd_enable", "", NULL, EVM_RESTART_SSHD},
 			{"sshd_enable_gp", "", NULL, EVM_RESTART_SSHD},
+#if defined(APP_DOH)
+			{"doh_enable", "", NULL, EVM_RESTART_DOH},
+			{"doh_server1", "", NULL, EVM_RESTART_DOH},
+			{"doh_server2", "", NULL, EVM_RESTART_DOH},
+			{"doh_server3", "", NULL, EVM_RESTART_DOH},
+			{"doh_opt1_1", "", NULL, EVM_RESTART_DOH},
+			{"doh_opt2_1", "", NULL, EVM_RESTART_DOH},
+			{"doh_opt1_2", "", NULL, EVM_RESTART_DOH},
+			{"doh_opt2_2", "", NULL, EVM_RESTART_DOH},
+			{"doh_opt1_3", "", NULL, EVM_RESTART_DOH},
+			{"doh_opt2_3", "", NULL, EVM_RESTART_DOH},
+#endif
+#if defined(APP_STUBBY)
+			{"stubby_enable", "", NULL, EVM_RESTART_STUBBY},
+			{"stubbyc.stubby.yml", "File", NULL, EVM_RESTART_STUBBY|EVM_BLOCK_UNSAFE},
+#endif
 #if defined(APP_TOR)
 			{"tor_enable", "", NULL, EVM_RESTART_TOR},
 			{"torconf.torrc", "File", NULL, EVM_RESTART_TOR|EVM_BLOCK_UNSAFE},
-#endif
-#if defined(APP_DOH)
-			{"doh_enable", "", NULL, EVM_RESTART_DOH|EVM_RESTART_DHCPD},
-			{ "doh_server1", "", NULL, EVM_RESTART_DOH|EVM_RESTART_DHCPD},
-			{ "doh_server2", "", NULL, EVM_RESTART_DOH|EVM_RESTART_DHCPD},
-			{ "doh_server3", "", NULL, EVM_RESTART_DOH|EVM_RESTART_DHCPD},
-			{ "doh_opt1_1", "", NULL, EVM_RESTART_DOH|EVM_RESTART_DHCPD},
-			{ "doh_opt2_1", "", NULL, EVM_RESTART_DOH|EVM_RESTART_DHCPD},
-			{ "doh_opt1_2", "", NULL, EVM_RESTART_DOH|EVM_RESTART_DHCPD},
-			{ "doh_opt2_2", "", NULL, EVM_RESTART_DOH|EVM_RESTART_DHCPD},
-			{ "doh_opt1_3", "", NULL, EVM_RESTART_DOH|EVM_RESTART_DHCPD},
-			{ "doh_opt2_3", "", NULL, EVM_RESTART_DOH|EVM_RESTART_DHCPD},
-#endif
-#if defined(APP_STUBBY)
-			{"stubby_enable", "", NULL, EVM_RESTART_STUBBY|EVM_RESTART_DHCPD},
-			{"stubbyc.stubby.yml", "File", NULL, EVM_RESTART_STUBBY|EVM_BLOCK_UNSAFE|EVM_RESTART_DHCPD},
 #endif
 #if defined(APP_PRIVOXY)
 			{"privoxy_enable", "", NULL, EVM_RESTART_PRIVOXY},
@@ -782,11 +785,12 @@
 			{"wl_HT_BW", "", NULL, EVM_RESTART_WIFI5},
 			{"wl_HT_RDG", "", NULL, EVM_RESTART_WIFI5},
 			{"wl_HT_AMSDU", "", NULL, EVM_RESTART_WIFI5},
-			{"wl_HT_80211KV", "", NULL, EVM_RESTART_WIFI5},
-			{"wl_HT_80211R", "", NULL, EVM_RESTART_WIFI5},
 			{"wl_HT_MpduDensity", "", NULL, EVM_RESTART_WIFI5},
 			{"wl_HT_BAWinSize", "", NULL, EVM_RESTART_WIFI5},
 			{"wl_HT_AutoBA", "", NULL, EVM_RESTART_WIFI5},
+			{"wl_KickStaRssiLow", "", NULL, EVM_RESTART_WIFI5},
+			{"wl_AssocReqRssiThres", "", NULL, EVM_RESTART_WIFI5},
+			{"wl_band_steering", "", NULL, EVM_RESTART_WIFI5},
 #if defined(USE_MT76X2_AP)
 			{"wl_VgaClamp", "", NULL, EVM_RESTART_WIFI5},
 #endif
@@ -820,9 +824,6 @@
 			{"wl_guest_wpa_psk", "", NULL, EVM_RESTART_WIFI5},
 			{"wl_guest_macrule", "", NULL, EVM_RESTART_WIFI5},
 			{"wl_guest_mcs_mode", "", NULL, EVM_RESTART_WIFI5},
-			{"wl_KickStaRssiLow", "", NULL, EVM_RESTART_WIFI5},
-			{"wl_AssocReqRssiThres", "", NULL, EVM_RESTART_WIFI5},
-			{"wl_band_steering", "", NULL, EVM_RESTART_WIFI5},
 			{"RBRList", "Group", ARGV((char*)variables_WLANConfig11a_RBRList, "16", "32", "wl_wdsnum_x"), EVM_RESTART_WIFI5},
 #endif
 			{0,0,0,0}
@@ -874,11 +875,12 @@
 			{"rt_HT_EXTCHA", "", NULL, EVM_RESTART_WIFI2},
 			{"rt_HT_RDG", "", NULL, EVM_RESTART_WIFI2 },
 			{"rt_HT_AMSDU", "", NULL, EVM_RESTART_WIFI2 },
-			{"rt_HT_80211KV", "", NULL, EVM_RESTART_WIFI2 },
-			{"rt_HT_80211R", "", NULL, EVM_RESTART_WIFI2 },
 			{"rt_HT_MpduDensity", "", NULL, EVM_RESTART_WIFI2 },
 			{"rt_HT_BAWinSize", "", NULL, EVM_RESTART_WIFI2 },
 			{"rt_HT_AutoBA", "", NULL, EVM_RESTART_WIFI2},
+			{"rt_KickStaRssiLow", "", NULL, EVM_RESTART_WIFI2},
+			{"rt_AssocReqRssiThres", "", NULL, EVM_RESTART_WIFI2},
+			{"rt_band_steering", "", NULL, EVM_RESTART_WIFI2},
 #if defined(USE_MT76X2_AP)
 			{"rt_VgaClamp", "", NULL, EVM_RESTART_WIFI2},
 #endif
@@ -915,9 +917,6 @@
 			{"rt_guest_wpa_psk", "", NULL, EVM_RESTART_WIFI2},
 			{"rt_guest_macrule", "", NULL, EVM_RESTART_WIFI2},
 			{"rt_guest_mcs_mode", "", NULL, EVM_RESTART_WIFI2},
-			{"rt_KickStaRssiLow", "", NULL, EVM_RESTART_WIFI2},
-			{"rt_AssocReqRssiThres", "", NULL, EVM_RESTART_WIFI2},
-			{"rt_band_steering", "", NULL, EVM_RESTART_WIFI2},
 			{"rt_RBRList", "Group", ARGV((char*)variables_WLANConfig11b_rt_RBRList, "16", "32", "rt_wdsnum_x"), EVM_RESTART_WIFI2},
 			{0,0,0,0}
 		};
@@ -950,7 +949,7 @@
 #if defined(USE_USB_SUPPORT)
 		{EVM_RESTART_MODEM,		EVT_RESTART_MODEM,		RCN_RESTART_MODEM,	EVM_RESTART_IPTV|EVM_RESTART_SWITCH_VLAN|EVM_RESTART_FIREWALL|EVM_RESTART_VPNCLI|EVM_RESTART_WAN},
 #endif
-		{EVM_RESTART_WAN,		EVT_RESTART_WAN,		RCN_RESTART_WAN,	EVM_RESTART_IPTV|EVM_RESTART_SWITCH_VLAN|EVM_RESTART_FIREWALL|EVM_RESTART_DOH|EVM_RESTART_STUBBY|EVM_RESTART_VPNCLI|EVM_RESTART_NETFILTER},
+		{EVM_RESTART_WAN,		EVT_RESTART_WAN,		RCN_RESTART_WAN,	EVM_RESTART_IPTV|EVM_RESTART_SWITCH_VLAN|EVM_RESTART_FIREWALL|EVM_RESTART_DOH|EVM_RESTART_STUBBY|EVM_RESTART_UPNP|EVM_RESTART_VPNCLI|EVM_RESTART_NETFILTER},
 		{EVM_RESTART_NETFILTER,		EVT_RESTART_NETFILTER,		RCN_RESTART_NETFILTER,	EVM_RESTART_FIREWALL},
 		{EVM_RESTART_RADV,		EVT_RESTART_RADV,		RCN_RESTART_RADV,	EVM_RESTART_DHCPD},
 		{EVM_RESTART_IPTV,		EVT_RESTART_IPTV,		RCN_RESTART_IPTV,	EVM_RESTART_FIREWALL},
@@ -1012,9 +1011,6 @@
 #if defined(APP_MINIDLNA)
 		{EVM_RESTART_DMS,		EVT_RESTART_DMS,		RCN_RESTART_DMS,	0},
 #endif
-#if defined(APP_FIREFLY)
-		{EVM_RESTART_ITUNES,		EVT_RESTART_ITUNES,		RCN_RESTART_ITUNES,	0},
-#endif
 #if defined(APP_TRMD)
 		{EVM_RESTART_TRMD,		EVT_RESTART_TRMD,		RCN_RESTART_TRMD,	EVM_RESTART_FIREWALL},
 #endif
@@ -1025,7 +1021,7 @@
 		{EVM_RESTART_NMBD,		EVT_RESTART_NMBD,		RCN_RESTART_NMBD,	0},
 #endif
 #if defined(APP_VLMCSD)
-		{EVM_RESTART_VLMCSD,		EVT_RESTART_VLMCSD,		RCN_RESTART_VLMCSD,	0},
+		{EVM_RESTART_VLMCSD,		EVT_RESTART_VLMCSD,		RCN_RESTART_VLMCSD,	EVM_RESTART_DHCPD},
 #endif
 #if defined(APP_IPERF3)
 		{EVM_RESTART_IPERF3,		EVT_RESTART_IPERF3,		RCN_RESTART_IPERF3,	0},

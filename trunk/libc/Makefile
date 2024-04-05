@@ -1,3 +1,5 @@
+#SRC_NAME=uClibc-ng-1.0.47
+#SRC_URL=https://downloads.uclibc-ng.org/releases/1.0.47/$(SRC_NAME).tar.xz
 .EXPORT_ALL_VARIABLES:
 .PHONY: all romfs clean
 
@@ -15,7 +17,17 @@ include $(ROOTDIR)/include/configedit.mk
 
 DESTDIR=$(ROOTDIR)/stage
 
-LIBC_DIR = uClibc-1.0.44
+LIBC_DIR = uClibc-1.0.47
+#all: download_test extract_test
+#download_test:
+#	( if [ ! -f $(SRC_NAME).tar.xz ]; then \
+#		wget -t5 --timeout=20 --no-check-certificate -O $(SRC_NAME).tar.xz $(SRC_URL); \
+#	fi )
+#
+#extract_test:
+#	( if [ ! -d $(SRC_NAME) ]; then \
+#		tar xJf $(SRC_NAME).tar.xz; \
+#	fi )
 
 all:
 	cp -fL $(ROOTDIR)/configs/boards/uclibc-mipsel.config $(LIBC_DIR)/.config
