@@ -91,6 +91,8 @@
 
 #define SAMBA_CONF			"/etc/smb.conf"
 
+#define STORAGE_MINIDLNA_CUSTOM_ICON_DIR "/etc/storage/minidlna"
+
 #define MP_MTD_RWFS			"/media/mtd_rwfs"
 
 #define SR_PREFIX_LAN			"LAN"
@@ -700,6 +702,7 @@ void ez_event_long(int btn_id);
 #endif
 int  is_ntpc_updated(void);
 int  ntpc_updated_main(int argc, char *argv[]);
+int  ntpc_syncnow_main(int argc, char *argv[]);
 int  watchdog_main(int argc, char *argv[]);
 int  start_watchdog(void);
 void notify_watchdog_time(void);

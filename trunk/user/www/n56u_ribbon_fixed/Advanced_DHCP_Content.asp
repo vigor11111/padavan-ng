@@ -26,11 +26,13 @@ var $j = jQuery.noConflict();
 
 $j(document).ready(function() {
 	init_itoggle('dhcp_enable_x');
-	init_itoggle('redirect_alldns');
-	init_itoggle('dhcp_filter_aaaa');
-	init_itoggle('dhcp_allservers');
-	init_itoggle('dhcp_strictorder');
 	init_itoggle('lan_dhcpd_x');
+	init_itoggle('redirect_all_dns');
+	init_itoggle('dhcp_filter_aaaa');
+	init_itoggle('dhcp_all_servers');
+	init_itoggle('dhcp_strict_order');
+	init_itoggle('dhcp_stop_dns_rebind');
+	init_itoggle('dhcp_proxy_dnssec');
 	init_itoggle('dhcp_static_x', change_dhcp_static_enabled);
 	init_itoggle('dhcp_static_arp');
 });
@@ -64,6 +66,12 @@ function initial(){
 		showhide_div('row_dhcpd_rt', 0);
 		showhide_div('row_dhcpd_ap', 1);
 		showhide_div('row_domain', 0);
+		showhide_div('row_redirect_all_dns', 0);
+		showhide_div('row_dhcp_filter_aaaa', 0);
+		showhide_div('row_dhcp_all_servers', 0);
+		showhide_div('row_dhcp_strict_order', 0);
+		showhide_div('row_dhcp_stop_dns_rebind', 0);
+		showhide_div('row_dhcp_proxy_dnssec', 0);
 		showhide_div('row_dservers', 0);
 		showhide_div('row_dhcpconf', 0);
 		showhide_div('row_hosts', 0);
@@ -503,21 +511,21 @@ function changeBgColor(obj, num){
                                                 <input type="text" maxlength="15" class="input" size="15" name="dhcp_wins_x" value="<% nvram_get_x("", "dhcp_wins_x"); %>" onkeypress="return is_ipaddr(this,event);" />
                                             </td>
                                         </tr>
-                                        <tr>
+                                        <tr id="row_redirect_all_dns">
                                             <th style="border-top: 0 none;"><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this,5,12);"><#LANHostConfig_ForceDNS_itemname#></a></th>
                                             <td style="border-top: 0 none;">
                                                 <div class="main_itoggle">
-                                                    <div id="redirect_alldns_on_of">
-                                                        <input type="checkbox" id="redirect_alldns_fake" <% nvram_match_x("", "redirect_alldns", "1", "value=1 checked"); %><% nvram_match_x("", "redirect_alldns", "0", "value=0"); %>>
+                                                    <div id="redirect_all_dns_on_of">
+                                                        <input type="checkbox" id="redirect_all_dns_fake" <% nvram_match_x("", "redirect_all_dns", "1", "value=1 checked"); %><% nvram_match_x("", "redirect_all_dns", "0", "value=0"); %>>
                                                     </div>
                                                 </div>
                                                 <div style="position: absolute; margin-left: -10000px;">
-                                                    <input type="radio" value="1" name="redirect_alldns" id="redirect_alldns_1" <% nvram_match_x("", "redirect_alldns", "1", "checked"); %>><#checkbox_Yes#>
-                                                    <input type="radio" value="0" name="redirect_alldns" id="redirect_alldns_0" <% nvram_match_x("", "redirect_alldns", "0", "checked"); %>><#checkbox_No#>
+                                                    <input type="radio" value="1" name="redirect_all_dns" id="redirect_all_dns_1" <% nvram_match_x("", "redirect_all_dns", "1", "checked"); %>><#checkbox_Yes#>
+                                                    <input type="radio" value="0" name="redirect_all_dns" id="redirect_all_dns_0" <% nvram_match_x("", "redirect_all_dns", "0", "checked"); %>><#checkbox_No#>
                                                 </div>
                                            </td>
                                         </tr>
-                                        <tr>
+                                        <tr id="row_dhcp_filter_aaaa">
                                             <th style="border-top: 0 none;"><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this,5,13);"><#LANHostConfig_DHCPFilterAAAA_itemname#></a></th>
                                             <td style="border-top: 0 none;">
                                                 <div class="main_itoggle">
@@ -531,31 +539,59 @@ function changeBgColor(obj, num){
                                                 </div>
                                            </td>
                                         </tr>
-                                        <tr>
+                                        <tr id="row_dhcp_all_servers">
                                             <th style="border-top: 0 none;"><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this,5,14);"><#LANHostConfig_DHCPAllservers_itemname#></a></th>
                                             <td style="border-top: 0 none;">
                                                 <div class="main_itoggle">
-                                                    <div id="dhcp_allservers_on_of">
-                                                        <input type="checkbox" id="dhcp_allservers_fake" <% nvram_match_x("", "dhcp_allservers", "1", "value=1 checked"); %><% nvram_match_x("", "dhcp_allservers", "0", "value=0"); %>>
+                                                    <div id="dhcp_all_servers_on_of">
+                                                        <input type="checkbox" id="dhcp_all_servers_fake" <% nvram_match_x("", "dhcp_all_servers", "1", "value=1 checked"); %><% nvram_match_x("", "dhcp_all_servers", "0", "value=0"); %>>
                                                     </div>
                                                 </div>
                                                 <div style="position: absolute; margin-left: -10000px;">
-                                                    <input type="radio" value="1" name="dhcp_allservers" id="dhcp_allservers_1" <% nvram_match_x("", "dhcp_allservers", "1", "checked"); %> /><#checkbox_Yes#>
-                                                    <input type="radio" value="0" name="dhcp_allservers" id="dhcp_allservers_0" <% nvram_match_x("", "dhcp_allservers", "0", "checked"); %> /><#checkbox_No#>
+                                                    <input type="radio" value="1" name="dhcp_all_servers" id="dhcp_all_servers_1" <% nvram_match_x("", "dhcp_all_servers", "1", "checked"); %> /><#checkbox_Yes#>
+                                                    <input type="radio" value="0" name="dhcp_all_servers" id="dhcp_all_servers_0" <% nvram_match_x("", "dhcp_all_servers", "0", "checked"); %> /><#checkbox_No#>
                                                 </div>
                                            </td>
                                         </tr>
-                                        <tr>
+                                        <tr id="row_dhcp_strict_order">
                                             <th style="border-top: 0 none;"><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this,5,15);"><#LANHostConfig_DHCPStrictorder_itemname#></a></th>
                                             <td style="border-top: 0 none;">
                                                 <div class="main_itoggle">
-                                                    <div id="dhcp_strictorder_on_of">
-                                                        <input type="checkbox" id="dhcp_strictorder_fake" <% nvram_match_x("", "dhcp_strictorder", "1", "value=1 checked"); %><% nvram_match_x("", "dhcp_strictorder", "0", "value=0"); %>>
+                                                    <div id="dhcp_strict_order_on_of">
+                                                        <input type="checkbox" id="dhcp_strict_order_fake" <% nvram_match_x("", "dhcp_strict_order", "1", "value=1 checked"); %><% nvram_match_x("", "dhcp_strict_order", "0", "value=0"); %>>
                                                     </div>
                                                 </div>
                                                 <div style="position: absolute; margin-left: -10000px;">
-                                                    <input type="radio" value="1" name="dhcp_strictorder" id="dhcp_strictorder_1" <% nvram_match_x("", "dhcp_strictorder", "1", "checked"); %> /><#checkbox_Yes#>
-                                                    <input type="radio" value="0" name="dhcp_strictorder" id="dhcp_strictorder_0" <% nvram_match_x("", "dhcp_strictorder", "0", "checked"); %> /><#checkbox_No#>
+                                                    <input type="radio" value="1" name="dhcp_strict_order" id="dhcp_strict_order_1" <% nvram_match_x("", "dhcp_strict_order", "1", "checked"); %> /><#checkbox_Yes#>
+                                                    <input type="radio" value="0" name="dhcp_strict_order" id="dhcp_strict_order_0" <% nvram_match_x("", "dhcp_strict_order", "0", "checked"); %> /><#checkbox_No#>
+                                                </div>
+                                           </td>
+                                        </tr>
+                                        <tr id="row_dhcp_stop_dns_rebind">
+                                            <th style="border-top: 0 none;"><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this,5,16);"><#LANHostConfig_DHCPStopDNSRebind_itemname#></a></th>
+                                            <td style="border-top: 0 none;">
+                                                <div class="main_itoggle">
+                                                    <div id="dhcp_stop_dns_rebind_on_of">
+                                                        <input type="checkbox" id="dhcp_stop_dns_rebind_fake" <% nvram_match_x("", "dhcp_stop_dns_rebind", "1", "value=1 checked"); %><% nvram_match_x("", "dhcp_stop_dns_rebind", "0", "value=0"); %>>
+                                                    </div>
+                                                </div>
+                                                <div style="position: absolute; margin-left: -10000px;">
+                                                    <input type="radio" value="1" name="dhcp_stop_dns_rebind" id="dhcp_stop_dns_rebind_1" <% nvram_match_x("", "dhcp_stop_dns_rebind", "1", "checked"); %> /><#checkbox_Yes#>
+                                                    <input type="radio" value="0" name="dhcp_stop_dns_rebind" id="dhcp_stop_dns_rebind_0" <% nvram_match_x("", "dhcp_stop_dns_rebind", "0", "checked"); %> /><#checkbox_No#>
+                                                </div>
+                                           </td>
+                                        </tr>
+                                        <tr id="row_dhcp_proxy_dnssec">
+                                            <th style="border-top: 0 none;"><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this,5,17);"><#LANHostConfig_DHCPProxyDNSSEC_itemname#></a></th>
+                                            <td style="border-top: 0 none;">
+                                                <div class="main_itoggle">
+                                                    <div id="dhcp_proxy_dnssec_on_of">
+                                                        <input type="checkbox" id="dhcp_proxy_dnssec_fake" <% nvram_match_x("", "dhcp_proxy_dnssec", "1", "value=1 checked"); %><% nvram_match_x("", "dhcp_proxy_dnssec", "0", "value=0"); %>>
+                                                    </div>
+                                                </div>
+                                                <div style="position: absolute; margin-left: -10000px;">
+                                                    <input type="radio" value="1" name="dhcp_proxy_dnssec" id="dhcp_proxy_dnssec_1" <% nvram_match_x("", "dhcp_proxy_dnssec", "1", "checked"); %> /><#checkbox_Yes#>
+                                                    <input type="radio" value="0" name="dhcp_proxy_dnssec" id="dhcp_proxy_dnssec_0" <% nvram_match_x("", "dhcp_proxy_dnssec", "0", "checked"); %> /><#checkbox_No#>
                                                 </div>
                                            </td>
                                         </tr>
@@ -580,7 +616,7 @@ function changeBgColor(obj, num){
                                             <td colspan="2">
                                                 <a href="javascript:spoiler_toggle('spoiler_conf')"><span><#CustomConf#> "dnsmasq.conf"</span></a>
                                                 <div id="spoiler_conf" style="display:none;">
-                                                    <textarea rows="16" wrap="off" spellcheck="false" maxlength="16384" class="span12" name="dnsmasq.dnsmasq.conf" style="font-family:'Courier New'; font-size:12px;"><% nvram_dump("dnsmasq.dnsmasq.conf",""); %></textarea>
+                                                    <textarea rows="16" wrap="off" spellcheck="false" maxlength="16384" class="span12" name="dnsmasq.dnsmasq.conf" style="resize:none; font-family:'Courier New'; font-size:12px;"><% nvram_dump("dnsmasq.dnsmasq.conf",""); %></textarea>
                                                 </div>
                                             </td>
                                         </tr>
@@ -588,7 +624,7 @@ function changeBgColor(obj, num){
                                             <td colspan="2">
                                                 <a href="javascript:spoiler_toggle('spoiler_dservers')"><span><#CustomConf#> "dnsmasq.servers"</span></a>
                                                 <div id="spoiler_dservers" style="display:none;">
-                                                    <textarea rows="16" wrap="off" spellcheck="false" maxlength="16384" class="span12" name="dnsmasq.dnsmasq.servers" style="font-family:'Courier New'; font-size:12px;"><% nvram_dump("dnsmasq.dnsmasq.servers",""); %></textarea>
+                                                    <textarea rows="16" wrap="off" spellcheck="false" maxlength="16384" class="span12" name="dnsmasq.dnsmasq.servers" style="resize:none; font-family:'Courier New'; font-size:12px;"><% nvram_dump("dnsmasq.dnsmasq.servers",""); %></textarea>
                                                 </div>
                                             </td>
                                         </tr>
@@ -596,7 +632,7 @@ function changeBgColor(obj, num){
                                             <td colspan="2">
                                                 <a href="javascript:spoiler_toggle('spoiler_dhcpconf')"><span><#CustomConf#> "dhcp.conf"</span></a>
                                                 <div id="spoiler_dhcpconf" style="display:none;">
-                                                    <textarea rows="16" wrap="off" spellcheck="false" maxlength="16384" class="span12" name="dnsmasq.dhcp.conf" style="font-family:'Courier New'; font-size:12px;"><% nvram_dump("dnsmasq.dhcp.conf",""); %></textarea>
+                                                    <textarea rows="16" wrap="off" spellcheck="false" maxlength="16384" class="span12" name="dnsmasq.dhcp.conf" style="resize:none; font-family:'Courier New'; font-size:12px;"><% nvram_dump("dnsmasq.dhcp.conf",""); %></textarea>
                                                 </div>
                                             </td>
                                         </tr>
@@ -604,7 +640,7 @@ function changeBgColor(obj, num){
                                             <td colspan="2" style="padding-bottom: 0px;">
                                                 <a href="javascript:spoiler_toggle('spoiler_hosts')"><span><#CustomConf#> "hosts"</span></a>
                                                 <div id="spoiler_hosts" style="display:none;">
-                                                    <textarea rows="16" wrap="off" spellcheck="false" maxlength="8192" class="span12" name="dnsmasq.hosts" style="font-family:'Courier New'; font-size:12px;"><% nvram_dump("dnsmasq.hosts",""); %></textarea>
+                                                    <textarea rows="16" wrap="off" spellcheck="false" maxlength="8192" class="span12" name="dnsmasq.hosts" style="resize:none; font-family:'Courier New'; font-size:12px;"><% nvram_dump("dnsmasq.hosts",""); %></textarea>
                                                 </div>
                                             </td>
                                         </tr>
@@ -612,7 +648,7 @@ function changeBgColor(obj, num){
                                             <td colspan="2" style="padding-bottom: 0px;">
                                                 <a href="javascript:spoiler_toggle('spoiler_wpad')"><span><#LANHostConfig_WPAD#> "wpad.dat"</span></a>
                                                 <div id="spoiler_wpad" style="display:none;">
-                                                    <textarea rows="16" wrap="off" spellcheck="false" maxlength="65536" class="span12" name="scripts.wpad.dat" style="font-family:'Courier New'; font-size:12px;"><% nvram_dump("scripts.wpad.dat",""); %></textarea>
+                                                    <textarea rows="16" wrap="off" spellcheck="false" maxlength="65536" class="span12" name="scripts.wpad.dat" style="resize:none; font-family:'Courier New'; font-size:12px;"><% nvram_dump("scripts.wpad.dat",""); %></textarea>
                                                 </div>
                                             </td>
                                         </tr>
@@ -623,7 +659,7 @@ function changeBgColor(obj, num){
                                             <th colspan="4" id="GWStatic" style="background-color: #E3E3E3;"><#LANHostConfig_ManualDHCPList_groupitemdesc#></th>
                                         </tr>
                                         <tr>
-                                            <th colspan="2" width="50%"><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this,5,16);"><#LANHostConfig_ManualDHCPEnable_itemname#></a></th>
+                                            <th colspan="2" width="50%"><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this,5,18);"><#LANHostConfig_ManualDHCPEnable_itemname#></a></th>
                                             <td colspan="2">
                                                 <div class="main_itoggle">
                                                     <div id="dhcp_static_x_on_of">
@@ -638,7 +674,7 @@ function changeBgColor(obj, num){
                                             </td>
                                         </tr>
                                         <tr id="row_static_arp" style="display:none">
-                                            <th colspan="2" width="50%"><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this,5,17);"><#LANHostConfig_ManualARP_itemname#></a></th>
+                                            <th colspan="2" width="50%"><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this,5,19);"><#LANHostConfig_ManualARP_itemname#></a></th>
                                             <td colspan="2">
                                                 <div class="main_itoggle">
                                                     <div id="dhcp_static_arp_on_of">

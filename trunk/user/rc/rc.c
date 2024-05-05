@@ -1325,6 +1325,10 @@ handle_notifications(void)
 		{
 			stop_vpn_client();
 		}
+		else if (strcmp(entry->d_name, "restart_vpn_client") == 0)
+		{
+			restart_vpn_client();
+		}
 		else if (strcmp(entry->d_name, RCN_RESTART_DDNS) == 0)
 		{
 			stop_ddns();
@@ -1567,6 +1571,7 @@ static const applet_rc_t applets_rc[] = {
 #endif
 	{ "ddns_updated",	ddns_updated_main	},
 	{ "ntpc_updated",	ntpc_updated_main	},
+	{ "ntpc_syncnow",	ntpc_syncnow_main	},
 
 	{ "detect_wan",		detect_wan_main		},
 	{ "detect_link",	detect_link_main	},
@@ -1921,4 +1926,3 @@ main(int argc, char **argv)
 
 	return ret;
 }
-

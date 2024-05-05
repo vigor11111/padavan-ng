@@ -240,6 +240,10 @@ function show_banner(L3){
 	if (!support_2g_radio()) {
 		title_2g = '"N/A" disabled';
 	}
+	var title_5g = '"5GHz"'
+	if (!support_5g_radio()) {
+		title_5g = '"N/A" disabled';
+	}
 
 	// log panel
 	if (!is_mobile && log_float != '0'){
@@ -252,7 +256,7 @@ function show_banner(L3){
 		bc += '    <td style="text-align: right"><button type="button" id="clearlog_btn" class="btn btn-info" style="min-width: 170px;" onclick="clearlog();"><#CTL_clear#></button></td>\n';
 		bc += '  </tr>\n';
 		bc += '</table>\n';
-		bc += '<span><textarea rows="28" wrap="off" class="span12" readonly="readonly" id="log_area"></textarea></span>\n';
+		bc += '<span><textarea style="resize:none;" rows="28" wrap="off" class="span12" readonly="readonly" id="log_area"></textarea></span>\n';
 		bc += '</div>\n';
 	}
 
@@ -348,11 +352,11 @@ function show_banner(L3){
 	bc += '<table class="table table-condensed" style="margin-bottom: 0px">\n';
 	bc += '  <tr>\n';
 	bc += '    <td width="50%" style="border: 0 none;"><#menu5_1#>:</td>\n';
-	bc += '    <td style="border: 0 none; min-width: 115px;"><div class="form-inline"><input type="button" id="wifi2_b" class="btn btn-mini '+enabled2Gclass+'" style="'+style_2g+'" value="2.4GHz" onclick="go_setting(2);">&nbsp;<input type="button" id="wifi5_b" style="'+style_5g+'" class="btn btn-mini '+enabled5Gclass+'" value="5GHz" onclick="go_setting(5);"></div></td>\n';
+	bc += '    <td style="border: 0 none; min-width: 115px;"><div class="form-inline"><input type="button" id="wifi2_b" class="btn btn-mini '+enabled2Gclass+'" style="'+style_2g+'" value='+title_2g+' onclick="go_setting(2);">&nbsp;<input type="button" id="wifi5_b" style="'+style_5g+'" class="btn btn-mini '+enabled5Gclass+'" value='+title_5g+' onclick="go_setting(5);"></div></td>\n';
 	bc += '  </tr>\n';
 	bc += '  <tr>\n';
 	bc += '    <td><#menu5_1_2#>:</td>\n';
-	bc += '    <td><div class="form-inline"><input type="button" id="wifi2_b_g" class="btn btn-mini '+enabledGuest2Gclass+'" style="'+style_2g+'" value="2.4GHz" onclick="go_wguest(2);">&nbsp;<input type="button" id="wifi5_b_g" style="'+style_5g+'" class="btn btn-mini '+enabledGuest5Gclass+'" value="5GHz" onclick="go_wguest(5);"></div></td>\n';
+	bc += '    <td><div class="form-inline"><input type="button" id="wifi2_b_g" class="btn btn-mini '+enabledGuest2Gclass+'" style="'+style_2g+'" value='+title_2g+' onclick="go_wguest(2);">&nbsp;<input type="button" id="wifi5_b_g" style="'+style_5g+'" class="btn btn-mini '+enabledGuest5Gclass+'" value='+title_5g+' onclick="go_wguest(5);"></div></td>\n';
 	bc += '  </tr>\n';
 	bc += '  <tr>\n';
 	bc += '    <td><#General_x_FirmwareVersion_itemname#></td>\n';
@@ -646,18 +650,14 @@ function show_loading_obj(){
 function submit_language(){
 	if($("select_lang").value != $("preferred_lang").value){
 		showLoading();
-		
 		with(document.titleForm){
 			action = "/start_apply.htm";
-			
 			if(location.pathname == "/")
 				current_page.value = "/index.asp";
 			else
 				current_page.value = location.pathname;
-			
 			preferred_lang.value = $("select_lang").value;
 			flag.value = "set_language";
-			
 			submit();
 		}
 	}
@@ -978,10 +978,9 @@ function checkDuplicateName(newname, targetArray){
 	var existing_string = targetArray.join(',');
 	existing_string = ","+existing_string+",";
 	var newstr = ","+trim(newname)+",";
-	
 	var re = new RegExp(newstr, "gi");
 	var matchArray = existing_string.match(re);
-	
+
 	if(matchArray != null)
 		return true;
 	else
