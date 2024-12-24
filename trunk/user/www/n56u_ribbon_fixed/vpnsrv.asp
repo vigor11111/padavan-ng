@@ -849,7 +849,7 @@ function getHash(){
                                     <td>
                                         <select name="vpns_ov_mode" class="input" onchange="change_vpns_vnet_enable();">
                                             <option value="0" <% nvram_match_x("", "vpns_ov_mode", "0","selected"); %>>L2 - TAP (Ethernet)</option>
-                                            <option value="1" <% nvram_match_x("", "vpns_ov_mode", "1","selected"); %>>L3 - TUN (IP)</option>
+                                            <option value="1" <% nvram_match_x("", "vpns_ov_mode", "1","selected"); %>>L3 - TUN (IP) (*)</option>
                                         </select>
                                     </td>
                                 </tr>
@@ -857,8 +857,8 @@ function getHash(){
                                     <th><#OVPN_Prot#></th>
                                     <td>
                                         <select name="vpns_ov_prot" class="input">
-                                            <option value="0" <% nvram_match_x("", "vpns_ov_prot", "0","selected"); %>>UDP over IPv4 (*)</option>
-                                            <option value="1" <% nvram_match_x("", "vpns_ov_prot", "1","selected"); %>>TCP over IPv4</option>
+                                            <option value="0" <% nvram_match_x("", "vpns_ov_prot", "0","selected"); %>>UDP over IPv4</option>
+                                            <option value="1" <% nvram_match_x("", "vpns_ov_prot", "1","selected"); %>>TCP over IPv4 (*)</option>
                                             <option value="2" <% nvram_match_x("", "vpns_ov_prot", "2","selected"); %>>UDP over IPv6</option>
                                             <option value="3" <% nvram_match_x("", "vpns_ov_prot", "3","selected"); %>>TCP over IPv6</option>
                                             <option value="4" <% nvram_match_x("", "vpns_ov_prot", "4","selected"); %>>UDP both</option>
@@ -893,8 +893,8 @@ function getHash(){
                                             <option value="0" <% nvram_match_x("", "vpns_ov_ciph", "0","selected"); %>>[none]</option>
                                             <option value="1" <% nvram_match_x("", "vpns_ov_ciph", "1","selected"); %>>[DES-CBC] DES, 64 bit</option>
                                             <option value="2" <% nvram_match_x("", "vpns_ov_ciph", "2","selected"); %>>[DES-EDE-CBC] 3DES, 128 bit</option>
-                                            <option value="3" <% nvram_match_x("", "vpns_ov_ciph", "3","selected"); %>>[BF-CBC] Blowfish, 128 bit (*)</option>
-                                            <option value="4" <% nvram_match_x("", "vpns_ov_ciph", "4","selected"); %>>[AES-128-CBC] AES, 128 bit</option>
+                                            <option value="3" <% nvram_match_x("", "vpns_ov_ciph", "3","selected"); %>>[BF-CBC] Blowfish, 128 bit</option>
+                                            <option value="4" <% nvram_match_x("", "vpns_ov_ciph", "4","selected"); %>>[AES-128-CBC] AES, 128 bit (*)</option>
                                             <option value="5" <% nvram_match_x("", "vpns_ov_ciph", "5","selected"); %>>[AES-192-CBC] AES, 192 bit</option>
                                             <option value="6" <% nvram_match_x("", "vpns_ov_ciph", "6","selected"); %>>[DES-EDE3-CBC] 3DES, 192 bit</option>
                                             <option value="7" <% nvram_match_x("", "vpns_ov_ciph", "7","selected"); %>>[DESX-CBC] DES-X, 192 bit</option>
@@ -920,8 +920,8 @@ function getHash(){
                                     <td>
                                         <select name="vpns_ov_compress" class="input">
                                             <option value="0" <% nvram_match_x("", "vpns_ov_compress", "0","selected"); %>><#btn_Disable#></option>
-                                            <option value="1" <% nvram_match_x("", "vpns_ov_compress", "1","selected"); %>><#checkbox_No#></option>
-                                            <option value="2" <% nvram_match_x("", "vpns_ov_compress", "2","selected"); %>><#OVPN_COMPRESS_Item2#> (*)</option>
+                                            <option value="1" <% nvram_match_x("", "vpns_ov_compress", "1","selected"); %>><#checkbox_No#> (*)</option>
+                                            <option value="2" <% nvram_match_x("", "vpns_ov_compress", "2","selected"); %>><#OVPN_COMPRESS_Item2#></option>
                                             <option value="3" <% nvram_match_x("", "vpns_ov_compress", "3","selected"); %>><#OVPN_COMPRESS_Item3#></option>
                                             <option value="4" <% nvram_match_x("", "vpns_ov_compress", "4","selected"); %>><#OVPN_COMPRESS_Item4#></option>
                                         </select>
@@ -950,7 +950,7 @@ function getHash(){
                                     <td colspan="2" style="padding-bottom: 15px;">
                                         <a href="javascript:spoiler_toggle('spoiler_vpns_ov_conf')"><span><#OVPN_User#></span></a>
                                         <div id="spoiler_vpns_ov_conf" style="display:none;">
-                                            <textarea rows="16" wrap="off" spellcheck="false" maxlength="8192" class="span12" name="ovpnsvr.server.conf" style="font-family:'Courier New'; font-size:12px;"><% nvram_dump("ovpnsvr.server.conf",""); %></textarea>
+                                            <textarea rows="16" wrap="off" spellcheck="false" maxlength="8192" class="span12" name="ovpnsvr.server.conf" style="resize:none; font-family:'Courier New'; font-size:12px;"><% nvram_dump("ovpnsvr.server.conf",""); %></textarea>
                                         </div>
                                     </td>
                                 </tr>
@@ -958,7 +958,7 @@ function getHash(){
                                     <td colspan="2" style="padding-bottom: 15px;">
                                         <a href="javascript:spoiler_toggle('spoiler_script')"><span><#RunPostVPNS#></span></a>
                                         <div id="spoiler_script" style="display:none;">
-                                            <textarea rows="16" wrap="off" spellcheck="false" maxlength="8192" class="span12" name="scripts.vpns_client_script.sh" style="font-family:'Courier New'; font-size:12px;"><% nvram_dump("scripts.vpns_client_script.sh",""); %></textarea>
+                                            <textarea rows="16" wrap="off" spellcheck="false" maxlength="8192" class="span12" name="scripts.vpns_client_script.sh" style="resize:none; font-family:'Courier New'; font-size:12px;"><% nvram_dump("scripts.vpns_client_script.sh",""); %></textarea>
                                         </div>
                                     </td>
                                 </tr>
@@ -1118,37 +1118,37 @@ function getHash(){
                                 <tr>
                                     <td style="padding-bottom: 0px; border-top: 0 none;">
                                         <span class="caption-bold">Root CA Certificate (ca.crt):</span>
-                                        <textarea rows="4" wrap="off" spellcheck="false" maxlength="8192" class="span12" name="ovpnsvr.ca.crt" style="font-family:'Courier New'; font-size:12px;"><% nvram_dump("ovpnsvr.ca.crt",""); %></textarea>
+                                        <textarea rows="4" wrap="off" spellcheck="false" maxlength="8192" class="span12" name="ovpnsvr.ca.crt" style="resize:none; font-family:'Courier New'; font-size:12px;"><% nvram_dump("ovpnsvr.ca.crt",""); %></textarea>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td style="padding-bottom: 0px; border-top: 0 none;">
                                         <span class="caption-bold">Diffie-Hellman PEM (dh1024.pem):</span>
-                                        <textarea rows="4" wrap="off" spellcheck="false" maxlength="4096" class="span12" name="ovpnsvr.dh1024.pem" style="font-family:'Courier New'; font-size:12px;"><% nvram_dump("ovpnsvr.dh1024.pem",""); %></textarea>
+                                        <textarea rows="4" wrap="off" spellcheck="false" maxlength="4096" class="span12" name="ovpnsvr.dh1024.pem" style="resize:none; font-family:'Courier New'; font-size:12px;"><% nvram_dump("ovpnsvr.dh1024.pem",""); %></textarea>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td style="padding-bottom: 0px; border-top: 0 none;">
                                         <span class="caption-bold">Server Certificate (server.crt):</span>
-                                        <textarea rows="4" wrap="off" spellcheck="false" maxlength="8192" class="span12" name="ovpnsvr.server.crt" style="font-family:'Courier New'; font-size:12px;"><% nvram_dump("ovpnsvr.server.crt",""); %></textarea>
+                                        <textarea rows="4" wrap="off" spellcheck="false" maxlength="8192" class="span12" name="ovpnsvr.server.crt" style="resize:none; font-family:'Courier New'; font-size:12px;"><% nvram_dump("ovpnsvr.server.crt",""); %></textarea>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td style="padding-bottom: 0px; border-top: 0 none;">
                                         <span class="caption-bold">Server Private Key (server.key) - secret:</span>
-                                        <textarea rows="4" wrap="off" spellcheck="false" maxlength="8192" class="span12" name="ovpnsvr.server.key" style="font-family:'Courier New'; font-size:12px;"><% nvram_dump("ovpnsvr.server.key",""); %></textarea>
+                                        <textarea rows="4" wrap="off" spellcheck="false" maxlength="8192" class="span12" name="ovpnsvr.server.key" style="resize:none; font-family:'Courier New'; font-size:12px;"><% nvram_dump("ovpnsvr.server.key",""); %></textarea>
                                     </td>
                                 </tr>
                                 <tr id="row_ta_key">
                                     <td style="padding-bottom: 0px; border-top: 0 none;">
                                         <span class="caption-bold">TLS Auth/Crypt Key (ta.key/tc.key) - secret:</span>
-                                        <textarea rows="4" wrap="off" spellcheck="false" maxlength="8192" class="span12" name="ovpnsvr.ta.key" style="font-family:'Courier New'; font-size:12px;"><% nvram_dump("ovpnsvr.ta.key",""); %></textarea>
+                                        <textarea rows="4" wrap="off" spellcheck="false" maxlength="8192" class="span12" name="ovpnsvr.ta.key" style="resize:none; font-family:'Courier New'; font-size:12px;"><% nvram_dump("ovpnsvr.ta.key",""); %></textarea>
                                     </td>
                                 </tr>
                                 <tr id="row_stc2_key">
                                     <td style="padding-bottom: 0px; border-top: 0 none;">
                                         <span class="caption-bold">TLS Crypt v2 Key (stc2.key) - secret:</span>
-                                        <textarea rows="4" wrap="off" spellcheck="false" maxlength="8192" class="span12" name="ovpnsvr.stc2.key" style="font-family:'Courier New'; font-size:12px;"><% nvram_dump("ovpnsvr.stc2.key",""); %></textarea>
+                                        <textarea rows="4" wrap="off" spellcheck="false" maxlength="8192" class="span12" name="ovpnsvr.stc2.key" style="resize:none; font-family:'Courier New'; font-size:12px;"><% nvram_dump("ovpnsvr.stc2.key",""); %></textarea>
                                     </td>
                                 </tr>
                             </table>

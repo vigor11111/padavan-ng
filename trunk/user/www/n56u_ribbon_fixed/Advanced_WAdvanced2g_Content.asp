@@ -26,6 +26,8 @@ var $j = jQuery.noConflict();
 
 $j(document).ready(function() {
 	init_itoggle('rt_greenap');
+	init_itoggle('rt_pmf', pmf_handle);
+	init_itoggle('rt_pmfsha256');
 	init_itoggle('rt_ap_isolate');
 });
 
@@ -74,7 +76,7 @@ function initial(){
 	if (!support_2g_inic_mii())
 		showhide_div('row_mrate', 0);
 
-    if (support_2g_band_steering())
+	if (support_2g_band_steering())
 		showhide_div("row_band_steering", 1);
 
 	if (support_2g_turbo_qam())
@@ -86,6 +88,17 @@ function initial(){
 	load_body();
 
 	change_wmm();
+	pmf_handle();
+}
+
+function pmf_handle() {
+	var v = document.form.rt_pmf[0].checked;
+	var p = document.form.rt_pmfsha256[0].checked;
+	if (v && !p) {
+		document.form.rt_pmfsha256[0].checked=true;
+		document.form.rt_pmfsha256[1].checked=false;
+	}
+	showhide_div("row_pmfsha256", !v);
 }
 
 function change_wmm() {
@@ -215,6 +228,34 @@ function done_validating(action){
                                                 </select>
                                             </td>
                                         </tr>
+                                        <tr id="row_pmf">
+                                            <th><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this, 3, 27);"><#WIFIPMF_itemname#></a></th>
+                                            <td>
+                                                <div class="main_itoggle">
+                                                    <div id="rt_pmf_on_of">
+                                                        <input type="checkbox" id="rt_pmf_fake" <% nvram_match_x("", "rt_pmf", "1", "value=1 checked"); %><% nvram_match_x("", "rt_pmf", "0", "value=0"); %>>
+                                                    </div>
+                                                </div>
+                                                <div style="position: absolute; margin-left: -10000px;">
+                                                    <input type="radio" value="1" name="rt_pmf" id="rt_pmf_1" class="input" <% nvram_match_x("", "rt_pmf", "1", "checked"); %>><#checkbox_Yes#>
+                                                    <input type="radio" value="0" name="rt_pmf" id="rt_pmf_0" class="input" <% nvram_match_x("", "rt_pmf", "0", "checked"); %>><#checkbox_No#>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr id="row_pmfsha256">
+                                            <th><#WIFIPMFsha256#></th>
+                                            <td>
+                                                <div class="main_itoggle">
+                                                    <div id="rt_pmfsha256_on_of">
+                                                        <input type="checkbox" id="rt_pmfsha256_fake" <% nvram_match_x("", "rt_pmfsha256", "1", "value=1 checked"); %><% nvram_match_x("", "rt_pmfsha256", "0", "value=0"); %>>
+                                                    </div>
+                                                </div>
+                                                <div style="position: absolute; margin-left: -10000px;">
+                                                    <input type="radio" value="1" name="rt_pmfsha256" id="rt_pmfsha256_1" class="input" <% nvram_match_x("", "rt_pmfsha256", "1", "checked"); %>><#checkbox_Yes#>
+                                                    <input type="radio" value="0" name="rt_pmfsha256" id="rt_pmfsha256_0" class="input" <% nvram_match_x("", "rt_pmfsha256", "0", "checked"); %>><#checkbox_No#>
+                                                </div>
+                                            </td>
+                                        </tr>
                                         <tr id="row_greenap">
                                             <th><#WIFIGreenAP#></th>
                                             <td>
@@ -223,7 +264,6 @@ function done_validating(action){
                                                         <input type="checkbox" id="rt_greenap_fake" <% nvram_match_x("", "rt_greenap", "1", "value=1 checked"); %><% nvram_match_x("", "rt_greenap", "0", "value=0"); %>>
                                                     </div>
                                                 </div>
-
                                                 <div style="position: absolute; margin-left: -10000px;">
                                                     <input type="radio" value="1" name="rt_greenap" id="rt_greenap_1" class="input" <% nvram_match_x("", "rt_greenap", "1", "checked"); %>><#checkbox_Yes#>
                                                     <input type="radio" value="0" name="rt_greenap" id="rt_greenap_0" class="input" <% nvram_match_x("", "rt_greenap", "0", "checked"); %>><#checkbox_No#>
@@ -302,6 +342,15 @@ function done_validating(action){
                                                 <select name="rt_ldpc" class="input">
                                                     <option value="0" <% nvram_match_x("","rt_ldpc", "0","selected"); %>><#btn_Disable#> (*)</option>
                                                     <option value="1" <% nvram_match_x("","rt_ldpc", "1","selected"); %>>11n only</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                        <tr id="row_stbc">
+                                            <th><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this, 3, 26);"><#WIFISTBC_itemname#></a></th>
+                                            <td>
+                                                <select name="rt_stbc" class="input">
+                                                    <option value="0" <% nvram_match_x("","rt_stbc", "0","selected"); %>><#btn_Disable#></option>
+                                                    <option value="1" <% nvram_match_x("","rt_stbc", "1","selected"); %>>11n only (*)</option>
                                                 </select>
                                             </td>
                                         </tr>
@@ -386,7 +435,7 @@ function done_validating(action){
                                               </select>
                                             </td>
                                         </tr>
-                                        <tr id="row_band_steering" style="display:none">
+<!--                                        <tr id="row_band_steering" style="display:none">
                                             <th><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this, 3, 20);"><#WLANConfig11n_band_steering_itemname#></a></th>
                                             <td>
                                                 <select name="rt_band_steering" class="input">
@@ -394,7 +443,7 @@ function done_validating(action){
                                                     <option value="1" <% nvram_match_x("","rt_band_steering", "1","selected"); %>><#btn_Enable#></option>
                                                 </select>
                                             </td>
-                                        </tr>
+                                        </tr> -->
                                         <tr id="row_turbo_qam" style="display:none">
                                             <th><#WLANConfig11b_x_turbo_qam#></th>
                                             <td>
@@ -408,8 +457,8 @@ function done_validating(action){
                                             <th><#WLANConfig11b_x_rt_airtimefairness#></th>
                                             <td>
                                                 <select name="rt_airtimefairness" class="input">
-                                                    <option value="0" <% nvram_match_x("","rt_airtimefairness", "0","selected"); %>><#btn_Disable#> (*)</option>
-                                                    <option value="1" <% nvram_match_x("","rt_airtimefairness", "1","selected"); %>><#btn_Enable#></option>
+                                                    <option value="0" <% nvram_match_x("","rt_airtimefairness", "0","selected"); %>><#btn_Disable#></option>
+                                                    <option value="1" <% nvram_match_x("","rt_airtimefairness", "1","selected"); %>><#btn_Enable#> (*)</option>
                                                 </select>
                                             </td>
                                         </tr>

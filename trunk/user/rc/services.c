@@ -184,9 +184,7 @@ start_telnetd(void)
 }
 
 #if defined(APP_SSHD)
-int
-is_sshd_run(void)
-{
+int is_sshd_run(void){
 	if (check_if_file_exist("/usr/bin/dropbearmulti"))
 	{
 		if (pids("dropbear"))
@@ -201,15 +199,11 @@ is_sshd_run(void)
 	return 0;
 }
 
-void
-stop_sshd(void)
-{
+void stop_sshd(void){
 	eval("/usr/bin/sshd.sh", "stop");
 }
 
-void
-start_sshd(void)
-{
+void start_sshd(void){
 	int sshd_mode = nvram_get_int("sshd_enable");
 
 	if (sshd_mode == 2)
@@ -218,9 +212,7 @@ start_sshd(void)
 		eval("/usr/bin/sshd.sh", "start");
 }
 
-void
-restart_sshd(void)
-{
+void restart_sshd(void){
 	int is_run_before = is_sshd_run();
 	int is_run_after;
 
@@ -233,7 +225,6 @@ restart_sshd(void)
 		restart_firewall();
 }
 #endif
-
 #if defined(SUPPORT_ZRAM)
 int
 get_zram_disksize(void)
@@ -282,11 +273,8 @@ restart_zram(void)
 	start_zram();
 }
 #endif
-
 #if defined(APP_DOH)
-int
-is_doh_run(void)
-{
+int is_doh_run(void){
 	if (check_if_file_exist("/usr/sbin/doh_proxy"))
 	{
 		if (pids("doh_proxy"))
@@ -295,32 +283,25 @@ is_doh_run(void)
 	return 0;
 }
 
-void
-stop_doh(void)
-{
+void stop_doh(void){
 	eval("/usr/bin/doh_proxy.sh", "stop");
 }
 
-void
-start_doh(void)
-{
+void start_doh(void){
 	int doh_mode = nvram_get_int("doh_enable");
 
 	if (doh_mode == 1)
 		eval("/usr/bin/doh_proxy.sh", "start");
 }
-void
-restart_doh(void)
-{
+
+void restart_doh(void){
 	stop_doh();
 	start_doh();
 	restart_dhcpd();
 }
 #endif
 #if defined(APP_STUBBY)
-int
-is_stubby_run(void)
-{
+int is_stubby_run(void){
 	if (check_if_file_exist("/usr/sbin/stubby"))
 	{
 		if (pids("stubby_proxy"))
@@ -329,33 +310,51 @@ is_stubby_run(void)
 	return 0;
 }
 
-void
-stop_stubby(void)
-{
+void stop_stubby(void){
 	eval("/usr/bin/stubby_proxy.sh", "stop");
 }
 
-void
-start_stubby(void)
-{
+void start_stubby(void){
 	int stubby_mode = nvram_get_int("stubby_enable");
 
 	if (stubby_mode == 1)
 		eval("/usr/bin/stubby_proxy.sh", "start");
 }
-void
-restart_stubby(void)
-{
+
+void restart_stubby(void){
 	stop_stubby();
 	start_stubby();
 	restart_dhcpd();
 }
+#endif
+#if defined(APP_ZAPRET)
+int is_zapret_run(void){
+	if (check_if_file_exist("/usr/bin/nfqws"))
+	{
+		if (pids("zapret"))
+			return 1;
+	}
+	return 0;
+}
 
+void stop_zapret(void){
+	eval("/usr/bin/zapret.sh", "stop");
+}
+
+void start_zapret(void){
+	int zapret_mode = nvram_get_int("zapret_enable");
+
+	if (zapret_mode == 1)
+		eval("/usr/bin/zapret.sh", "start");
+}
+
+void restart_zapret(void){
+	stop_zapret();
+	start_zapret();
+}
 #endif
 #if defined(APP_TOR)
-int
-is_tor_run(void)
-{
+int is_tor_run(void){
 	if (check_if_file_exist("/usr/sbin/tor"))
 	{
 		if (pids("tor"))
@@ -364,33 +363,24 @@ is_tor_run(void)
 	return 0;
 }
 
-void
-stop_tor(void)
-{
+void stop_tor(void){
 	eval("/usr/bin/tor.sh", "stop");
 }
 
-void
-start_tor(void)
-{
+void start_tor(void){
 	int tor_mode = nvram_get_int("tor_enable");
 
 	if (tor_mode == 1)
 		eval("/usr/bin/tor.sh", "start");
 }
 
-void
-restart_tor(void)
-{
+void restart_tor(void){
 	stop_tor();
 	start_tor();
 }
 #endif
-
 #if defined(APP_PRIVOXY)
-int
-is_privoxy_run(void)
-{
+int is_privoxy_run(void){
 	if (check_if_file_exist("/usr/sbin/privoxy"))
 	{
 		if (pids("privoxy"))
@@ -399,32 +389,24 @@ is_privoxy_run(void)
 	return 0;
 }
 
-void
-stop_privoxy(void)
-{
+void stop_privoxy(void){
 	eval("/usr/bin/privoxy.sh", "stop");
 }
 
-void
-start_privoxy(void)
-{
+void start_privoxy(void){
 	int privoxy_mode = nvram_get_int("privoxy_enable");
 
 	if (privoxy_mode == 1)
 		eval("/usr/bin/privoxy.sh", "start");
 }
 
-void
-restart_privoxy(void)
-{
+void restart_privoxy(void){
 	stop_privoxy();
 	start_privoxy();
 }
 #endif
 #if defined(APP_DNSCRYPT)
-int
-is_dnscrypt_run(void)
-{
+int is_dnscrypt_run(void){
 	if (check_if_file_exist("/usr/sbin/dnscrypt-proxy"))
 	{
 		if (pids("dnscrypt-proxy"))
@@ -433,22 +415,16 @@ is_dnscrypt_run(void)
 	return 0;
 }
 
-void
-stop_dnscrypt(void)
-{
+void stop_dnscrypt(void){
 	eval("/usr/bin/dnscrypt-proxy.sh", "stop");
 }
 
-void
-start_dnscrypt(void)
-{
+void start_dnscrypt(void){
 	if (nvram_get_int("dnscrypt_enable") == 1)
 		eval("/usr/bin/dnscrypt-proxy.sh", "start");
 }
 
-void
-restart_dnscrypt(void)
-{
+void restart_dnscrypt(void){
 	int is_run_before = is_dnscrypt_run();
 	int is_run_after;
 
@@ -466,9 +442,7 @@ restart_dnscrypt(void)
 }
 #endif
 #if defined(APP_VLMCSD)
-int
-is_vlmcsd_run(void)
-{
+int is_vlmcsd_run(void){
 	if (check_if_file_exist("/usr/bin/vlmcsd"))
 	{
 		if (pids("vlmcsd"))
@@ -477,31 +451,24 @@ is_vlmcsd_run(void)
 	return 0;
 }
 
-void 
-stop_vlmcsd(void)
-{
+void stop_vlmcsd(void){
 	eval("/usr/bin/vlmcsd.sh","stop");
 }
 
-void 
-start_vlmcsd(void)
-{
+void start_vlmcsd(void){
 	int vlmcsd_mode = nvram_get_int("vlmcsd_enable");
 
 	if ( vlmcsd_mode == 1)
 		eval("/usr/bin/vlmcsd.sh","start");
 }
-void 
-restart_vlmcsd(void)
-{
+
+void restart_vlmcsd(void){
 	stop_vlmcsd();
 	start_vlmcsd();
 }
 #endif
 #if defined(APP_IPERF3)
-int
-is_iperf3_run(void)
-{
+int is_iperf3_run(void){
 	if (check_if_file_exist("/usr/bin/iperf3"))
 	{
 		if (pids("iperf3"))
@@ -510,24 +477,18 @@ is_iperf3_run(void)
 	return 0;
 }
 
-void
-stop_iperf3(void)
-{
+void stop_iperf3(void){
 	eval("/usr/bin/iperf3.sh","stop");
 }
 
-void 
-start_iperf3(void)
-{
+void start_iperf3(void){
 	int iperf3_mode = nvram_get_int("iperf3_enable");
 
 	if ( iperf3_mode == 1)
 		eval("/usr/bin/iperf3.sh","start");
 }
 
-void 
-restart_iperf3(void)
-{
+void restart_iperf3(void){
 	stop_iperf3();
 	start_iperf3();
 }
@@ -724,6 +685,9 @@ start_services_once(int is_ap_mode)
 #if defined(APP_STUBBY)
 	start_stubby();
 #endif
+#if defined(APP_ZAPRET)
+	start_zapret();
+#endif
 #if defined(APP_TOR)
 	start_tor();
 #endif
@@ -764,7 +728,6 @@ start_services_once(int is_ap_mode)
 	start_networkmap(1);
 	start_rstats();
 	return 0;
-
 }
 
 void
@@ -792,6 +755,9 @@ stop_services(int stopall)
 #endif
 #if defined(APP_STUBBY)
 	stop_stubby();
+#endif
+#if defined(APP_ZAPRET)
+	stop_zapret();
 #endif
 #if defined(APP_TOR)
 	stop_tor();

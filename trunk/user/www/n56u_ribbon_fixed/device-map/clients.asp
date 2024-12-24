@@ -117,11 +117,15 @@ function check_full_scan_done(){
 		$("LoadingBar").style.display = "none";
 		$("refresh_list").disabled = false;
 		if (sw_mode == "3") {
-			$j('.popover_top').popover({placement: 'top'});
-			$j('.popover_bottom').popover({placement: 'bottom'});
+			$j(document).ready(function() {
+				$j('.popover_top').popover({placement: 'top'});
+				$j('.popover_bottom').popover({placement: 'bottom'});
+			});
 		}else {
-			$j('.popover_top').popover({placement: 'right'});
-			$j('.popover_bottom').popover({placement: 'right'});
+			$j(document).ready(function() {
+				$j('.popover_top').popover({placement: 'right'});
+				$j('.popover_bottom').popover({placement: 'right'});
+			});
 		}
 	}else{
 		$("LoadingBar").style.display = "block";
@@ -157,7 +161,7 @@ function add_client_row(table, atIndex, client, blocked, j){
 	var macCell = row.insertCell(3);
 	var rssiCell = row.insertCell(4);
 	var blockCell = row.insertCell(5);
-	
+
 	var arpon = <% nvram_get_x("","dhcp_static_arp"); %>;
 	var mdhcp = <% nvram_get_x("","dhcp_static_x"); %>;
 	if (arpon == 1 && mdhcp == 1){
@@ -201,6 +205,22 @@ function show_clients(){
 
 	var hasBlocked = false;
 	for(j=0, i=0, k=0; j < clients.length; j++){
+		for(j2=0; j2 < m_dhcp.length && clients[j][0] == "*"; j2++){
+			if (clients[j][2].toUpperCase() == m_dhcp[j2][0].toUpperCase()){
+				if (m_dhcp[j2][2] != "" && m_dhcp[j2][2] != null && m_dhcp[j2][2].length > 0){
+					clients[j][0] = m_dhcp[j2][2];
+					break;
+				}
+			}
+		}
+		for(j3=0; j3 < clients.length && clients[j][0] == "*"; j3++){
+			if (clients[j][2].toUpperCase() == clients[j3][2].toUpperCase()){
+				if (clients[j3][0] != "*" && clients[j3][0] != null && clients[j3][0].length > 0){
+					clients[j][0] = clients[j3][0];
+					break;
+				}
+			}
+		}
 		if(clients[j][7] == "u" || sw_mode == "3"){
 			add_client_row(table1, k+2, clients[j], false, j);
 			k++;

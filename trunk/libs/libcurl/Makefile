@@ -1,5 +1,5 @@
-SRC_NAME=curl-8.5.0
-SRC_URL=https://github.com/curl/curl/releases/download/curl-8_5_0/$(SRC_NAME).tar.xz
+SRC_NAME=curl-8.11.1
+SRC_URL=https://github.com/curl/curl/releases/download/curl-8_11_1/$(SRC_NAME).tar.xz
 
 #all: download_test extract_test config_test
 all: config_test
@@ -13,7 +13,7 @@ download_test:
 extract_test:
 	( if [ ! -d $(SRC_NAME) ]; then \
 		tar xJf $(SRC_NAME).tar.xz; \
-		patch -d $(SRC_NAME) -p1 -i ../curl-orig.patch; \
+		patch -d $(SRC_NAME) -p1 -i ../no_docs_tests.patch; \
 	fi )
 
 config_test:
@@ -22,7 +22,6 @@ config_test:
 	else \
 		make configure && touch config_done; \
 	fi )
-
 
 configure:
 	( cd $(SRC_NAME) ; \
@@ -57,8 +56,9 @@ configure:
 		--disable-mqtt \
 		--disable-alt-svc \
 		--disable-hsts \
-		--without-brotli \
 		--disable-ntlm \
+		--disable-docs \
+		--without-brotli \
 		--without-hyper \
 		--without-gnutls \
 		--without-ca-path \

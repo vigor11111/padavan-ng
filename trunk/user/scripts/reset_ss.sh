@@ -27,7 +27,7 @@ echo 1024     > /proc/sys/net/ipv4/neigh/default/gc_thresh2
 echo 2048     > /proc/sys/net/ipv4/neigh/default/gc_thresh3
 
 # ipv6
-if [ -d /proc/sys/net/ipv6 ] ; then
+if [ -d /proc/sys/net/ipv6 ]; then
   echo 256    > /proc/sys/net/ipv6/neigh/default/gc_thresh1
   echo 1024   > /proc/sys/net/ipv6/neigh/default/gc_thresh2
   echo 2048   > /proc/sys/net/ipv6/neigh/default/gc_thresh3
@@ -42,7 +42,7 @@ echo 1        > /proc/sys/net/ipv4/conf/eth2/rp_filter
 echo 0        > /proc/sys/net/netfilter/nf_conntrack_checksum
 echo 1        > /proc/sys/net/netfilter/nf_conntrack_tcp_be_liberal
 echo 300      > /proc/sys/net/netfilter/nf_conntrack_generic_timeout
-echo 1800     > /proc/sys/net/netfilter/nf_conntrack_tcp_timeout_established
+echo 3600     > /proc/sys/net/netfilter/nf_conntrack_tcp_timeout_established
 echo 30       > /proc/sys/net/netfilter/nf_conntrack_icmp_timeout
 echo 50       > /proc/sys/net/netfilter/nf_conntrack_udp_timeout
 
@@ -54,7 +54,7 @@ echo 0        > /proc/sys/vm/panic_on_oom
 EOF
 chmod 755 "$script_start"
 
-if [ -z "$1" ] ; then
+if [ -z "$1" ]; then
 	$script_start
 	mtd_storage.sh save
 fi

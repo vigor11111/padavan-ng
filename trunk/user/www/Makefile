@@ -7,7 +7,7 @@ ROMFS_DIR = $(ROOTDIR)/romfs
 include $(ROOTDIR)/user/shared/boards.mk
 
 PROJECT_HOME_URL="https:\/\/gitlab.com\/hadzhioglu\/padavan-ng"
-LABEL_COPYRIGHT_TEXT="© 2011-`date +'%Y'` Padavan \& N56U project community \& Building a firmware: `date +'%d.%m.%Y %H:%M:%S'`"
+LABEL_COPYRIGHT_TEXT="© 2011-`date +'%Y'` Padavan \& N56U Project Community. Firmware Compilation Time: `date +'%d.%m.%Y %H:%M:%S'`"
 
 BOARD_PATTERN=s/ZVMODELVZ/$(CONFIG_FIRMWARE_PRODUCT_ID)/g
 COPYR_PATTERN=s/ZVCOPYRVZ/$(LABEL_COPYRIGHT_TEXT)/g
@@ -36,6 +36,10 @@ endif
 ifeq ($(CONFIG_FIRMWARE_INCLUDE_LANG_BR),y)
 	echo "LANG_BR=Brazil" >> $(ROMFS_DIR)/www/EN.header
 	cp dict/BR.dict $(ROMFS_DIR)/www
+endif
+ifeq ($(CONFIG_FIRMWARE_INCLUDE_LANG_CN),y)
+	echo "LANG_CN=简体中文" >> $(ROMFS_DIR)/www/EN.header
+	cp dict/CN.dict $(ROMFS_DIR)/www
 endif
 ifeq ($(CONFIG_FIRMWARE_INCLUDE_LANG_CZ),y)
 	echo "LANG_CZ=Česky" >> $(ROMFS_DIR)/www/EN.header

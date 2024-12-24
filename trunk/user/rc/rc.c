@@ -824,7 +824,7 @@ LED_CONTROL(int gpio_led, int flag)
 	{
 		if (is_soft_blink)
 			cpu_gpio_led_enabled(gpio_led, (flag == LED_OFF) ? 0 : 1);
-		
+
 		cpu_gpio_set_pin(gpio_led, flag);
 	}
 }
@@ -1009,7 +1009,7 @@ handle_notifications(void)
 	{
 		struct dirent *entry;
 		FILE *test_fp;
-		
+
 		entry = readdir(directory);
 		if (!entry)
 			break;
@@ -1017,13 +1017,13 @@ handle_notifications(void)
 			continue;
 		if (strcmp(entry->d_name, "..") == 0)
 			continue;
-		
+
 		/* Remove the marker file. */
 		snprintf(notify_name, sizeof(notify_name), "%s/%s", DIR_RC_NOTIFY, entry->d_name);
 		remove(notify_name);
-		
+
 		printf("rc notification: %s\n", entry->d_name);
-		
+
 		/* Take the appropriate action. */
 		if (!strcmp(entry->d_name, RCN_RESTART_REBOOT))
 		{
@@ -1244,6 +1244,12 @@ handle_notifications(void)
 			restart_stubby();
 		}
 #endif
+#if defined(APP_ZAPRET)
+		else if (strcmp(entry->d_name, RCN_RESTART_ZAPRET) == 0)
+		{
+			restart_zapret();
+		}
+#endif
 #if defined(APP_TOR)
 		else if (strcmp(entry->d_name, RCN_RESTART_TOR) == 0)
 		{
@@ -1284,6 +1290,7 @@ handle_notifications(void)
 		else if (strcmp(entry->d_name, RCN_RESTART_VLMCSD) == 0)
 		{
 			restart_vlmcsd();
+			restart_dhcpd();
 		}
 #endif
 #if defined(APP_IPERF3)
@@ -1323,6 +1330,10 @@ handle_notifications(void)
 		else if (strcmp(entry->d_name, "stop_vpn_client") == 0)
 		{
 			stop_vpn_client();
+		}
+		else if (strcmp(entry->d_name, "restart_vpn_client") == 0)
+		{
+			restart_vpn_client();
 		}
 		else if (strcmp(entry->d_name, RCN_RESTART_DDNS) == 0)
 		{
@@ -1492,7 +1503,7 @@ handle_notifications(void)
 		{
 			dbg("WARNING: rc notified of unrecognized event `%s'.\n", entry->d_name);
 		}
-		
+
 		/*
 		 * If there hasn't been another request for the same event made since
 		 * we started, we can safely remove the ``action incomplete'' marker.
@@ -1566,6 +1577,7 @@ static const applet_rc_t applets_rc[] = {
 #endif
 	{ "ddns_updated",	ddns_updated_main	},
 	{ "ntpc_updated",	ntpc_updated_main	},
+	{ "ntpc_syncnow",	ntpc_syncnow_main	},
 
 	{ "detect_wan",		detect_wan_main		},
 	{ "detect_link",	detect_link_main	},
@@ -1920,4 +1932,3 @@ main(int argc, char **argv)
 
 	return ret;
 }
-

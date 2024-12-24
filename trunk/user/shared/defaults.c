@@ -150,8 +150,8 @@ struct nvram_pair router_defaults[] = {
 	{ "https_lport", "443" },		/* HTTPS LAN port to listen on */
 	{ "https_clist", DEF_HTTPS_CIPH_LIST },	/* HTTPS SSL cipher list */
 	{ "fw_dos_x", "1" },			/* DoS Attacks Protection */
-	{ "dr_enable_x", "1" },			// oleg patch
-	{ "mr_enable_x", "0" },			// oleg patch
+	{ "dr_enable_x", "1" },			/* Use DHCP Routes */
+	{ "mr_enable_x", "0" },			/* Multicast Routing to LAN */
 	{ "mr_qleave_x", "1" },
 
 #if BOARD_HAS_5G_RADIO
@@ -219,7 +219,10 @@ struct nvram_pair router_defaults[] = {
 	{ "wl_stream_rx", STR(BOARD_NUM_ANT_5G_RX) },
 	{ "wl_preamble", "1" },
 	{ "wl_greenap", "0" },		/* 5GHz GreenAP */
+	{ "wl_pmf", "0" },
+	{ "wl_pmfsha256", "0" },
 	{ "wl_ldpc", "0" },
+	{ "wl_stbc", "0" },
 	{ "wl_HT_RDG", "0" },
 	{ "wl_HT_AMSDU", "0" },
 	{ "wl_HT_MpduDensity", "5" },
@@ -318,7 +321,10 @@ struct nvram_pair router_defaults[] = {
 	{ "rt_stream_rx", STR(BOARD_NUM_ANT_2G_RX) },
 	{ "rt_preamble", "1" },
 	{ "rt_greenap", "0" },		/* 2.4GHz GreenAP */
+	{ "rt_pmf", "0" },
+	{ "rt_pmfsha256", "0" },
 	{ "rt_ldpc", "0" },
+	{ "rt_stbc", "1" },
 	{ "rt_HT_RDG", "0" },
 	{ "rt_HT_AMSDU", "0" },
 	{ "rt_HT_MpduDensity", "5" },
@@ -347,7 +353,7 @@ struct nvram_pair router_defaults[] = {
 
 #if defined (USE_WID_2G) && USE_WID_2G==7615
 	{ "rt_turbo_qam", "1" },
-	{ "rt_airtimefairness", "0" },
+	{ "rt_airtimefairness", "1" },
 #endif
 
 	// ApCli 2.4GHz
@@ -368,6 +374,7 @@ struct nvram_pair router_defaults[] = {
 	{ "st_samba_mode", "1" },
 	{ "st_samba_lmb", "1" },
 	{ "st_samba_workgroup", DEF_SMB_WORKGROUP },
+	{ "st_ftp_ssl_mode", "0" },
 	{ "st_ftp_mode", "1" },
 	{ "st_ftp_log", "0" },
 	{ "st_ftp_pmin", "50000" },
@@ -501,7 +508,12 @@ struct nvram_pair router_defaults[] = {
 	{ "dhcp_dns3_x", "" },
 	{ "dhcp_dnsv6_x", "" },
 	{ "dhcp_wins_x", "" },
-	{ "redirect_alldns", "0" },		/* Redirect all clients DNS requests */
+	{ "redirect_all_dns", "0" },		/* Redirect all clients DNS requests */
+	{ "dhcp_filter_aaaa", "0" },
+	{ "dhcp_all_servers", "1" },
+	{ "dhcp_strict_order", "0" },
+	{ "dhcp_stop_dns_rebind", "0" },
+	{ "dhcp_proxy_dnssec", "0" },
 	{ "dhcp_verbose", "0" },		/* 0 : quiet, 1: verbose DHCP, 2: verbose DHCPv6, 3: verbose all */
 	{ "dhcp_static_x", "0" },
 	{ "dhcp_static_arp", "0" },
@@ -511,6 +523,8 @@ struct nvram_pair router_defaults[] = {
 	{ "ntp_period", "24" },
 	{ "ntp_server0", DEF_NTP_SERVER0 },
 	{ "ntp_server1", DEF_NTP_SERVER1 },
+	{ "ntp_server2", DEF_NTP_SERVER2 },
+	{ "ntp_server3", DEF_NTP_SERVER3 },
 
 	/* DDNS parameters */
 	{ "ddns_enable_x", "0" },
@@ -611,16 +625,22 @@ struct nvram_pair router_defaults[] = {
 	{ "doh_enable", "0" },
 	{ "doh_server1", "https://blitz.ahadns.com/1:4" },
 	{ "doh_server2", "https://freedns.controld.com/x-1hosts-lite" },
-	{ "doh_server3", "https://max.rethinkdns.com/1:AAQCAA==" },
+	{ "doh_server3", "https://sky.rethinkdns.com/1:AAQCAA==" },
+	{ "doh_server4", "" },
 	{ "doh_opt1_1", "-d -4 -v" },
 	{ "doh_opt2_1", "1.1.1.1,8.8.8.8,9.9.9.9,208.67.222.222" },
 	{ "doh_opt1_2", "-d -4 -v" },
 	{ "doh_opt2_2", "1.1.1.1,8.8.8.8,9.9.9.9,208.67.222.222" },
 	{ "doh_opt1_3", "-d -4 -v" },
 	{ "doh_opt2_3", "1.1.1.1,8.8.8.8,9.9.9.9,208.67.222.222" },
+	{ "doh_opt1_4", "" },
+	{ "doh_opt2_4", "" },
 #endif
 #if defined (APP_STUBBY)
 	{ "stubby_enable", "0" },
+#endif
+#if defined (APP_ZAPRET)
+	{ "zapret_enable", "0" },
 #endif
 #if defined (APP_TOR)
 	{ "tor_enable", "0" },
@@ -780,24 +800,24 @@ struct nvram_pair router_defaults[] = {
 	{ "vpnc_dgw", "0" },
 
 	{ "vpns_ov_mode", "1" },
-	{ "vpns_ov_prot", "0" },
+	{ "vpns_ov_prot", "1" },
 	{ "vpns_ov_port", "1194" },
 	{ "vpns_ov_mdig", "1" },
 	{ "vpns_ov_ciph", "15" },
 	{ "vpns_ov_ncp_clist", DEF_OVPNS_CIPH_LIST },
-	{ "vpns_ov_compress", "2" },
+	{ "vpns_ov_compress", "1" },
 	{ "vpns_ov_atls", "0" },
 	{ "vpns_ov_tcv2", "0" },
 	{ "vpns_ov_rdgw", "0" },
 	{ "vpnc_ov_mode", "1" },
 	{ "vpnc_ov_cnat", "0" },
-	{ "vpnc_ov_prot", "0" },
+	{ "vpnc_ov_prot", "1" },
 	{ "vpnc_ov_port", "1194" },
 	{ "vpnc_ov_auth", "0" },
 	{ "vpnc_ov_mdig", "1" },
 	{ "vpnc_ov_ciph", "15" },
 	{ "vpnc_ov_ncp_clist", DEF_OVPNC_CIPH_LIST },
-	{ "vpnc_ov_compress", "2" },
+	{ "vpnc_ov_compress", "1" },
 	{ "vpnc_ov_atls", "0" },
 
 	{ 0, 0 }
@@ -856,5 +876,3 @@ struct nvram_pair tables_defaults[] = {
 
 	{ 0, 0 }
 };
-
-

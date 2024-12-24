@@ -719,6 +719,8 @@ ej_dump(int eid, webs_t wp, int argc, char **argv)
 		snprintf(filename, sizeof(filename), "%s/%s", STORAGE_TORCONF_DIR, file+8);
 	else if (strncmp(file, "stubbyc.", 8)==0)
 		snprintf(filename, sizeof(filename), "%s/%s", STORAGE_STUBBY_DIR, file+8);
+	else if (strncmp(file, "zapretc.", 8)==0)
+		snprintf(filename, sizeof(filename), "%s/%s", STORAGE_ZAPRET_DIR, file+8);
 	else if (strncmp(file, "privoxy.", 8)==0)
 		snprintf(filename, sizeof(filename), "%s/%s", STORAGE_PRIVOXY_DIR, file+8);
 	else
@@ -929,6 +931,12 @@ validate_asp_apply(webs_t wp, int sid)
 #if defined(APP_STUBBY)
 			else if (!strncmp(v->name, "stubbyc.", 8)) {
 				if (write_textarea_to_file(value, STORAGE_STUBBY_DIR, file_name))
+					restart_needed_bits |= event_mask;
+			}
+#endif
+#if defined(APP_ZAPRET)
+			else if (!strncmp(v->name, "zapretc.", 8)) {
+				if (write_textarea_to_file(value, STORAGE_ZAPRET_DIR, file_name))
 					restart_needed_bits |= event_mask;
 			}
 #endif
@@ -2073,6 +2081,11 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 #else
 	int found_app_ftpd = 0;
 #endif
+#if defined(APP_FTPD_SSL)
+	int found_app_ftpd_ssl = 1;
+#else
+	int found_app_ftpd_ssl = 0;
+#endif
 #if defined(APP_RPL2TP)
 	int found_app_l2tp = 1;
 #else
@@ -2102,6 +2115,11 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 	int found_app_stubby = 1;
 #else
 	int found_app_stubby = 0;
+#endif
+#if defined(APP_ZAPRET)
+	int found_app_zapret = 1;
+#else
+	int found_app_zapret = 0;
 #endif
 #if defined(APP_TOR)
 	int found_app_tor = 1;
@@ -2210,9 +2228,11 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 #else
 	int has_openssl_ec = 0;
 #endif
-
+#if defined (SUPPORT_DDNS_SSL)
 	int has_ddns_ssl = 1;
-
+#else
+	int has_ddns_ssl = 0;
+#endif
 #if defined (USE_RT3352_MII)
 	int has_inic_mii = 1;
 #else
@@ -2288,12 +2308,14 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 		"function found_app_smbd() { return %d;}\n"
 		"function found_app_nmbd() { return %d;}\n"
 		"function found_app_ftpd() { return %d;}\n"
+		"function found_app_ftpd_ssl() { return %d;}\n"
 		"function found_app_l2tp() { return %d;}\n"
 		"function found_srv_u2ec() { return %d;}\n"
 		"function found_srv_lprd() { return %d;}\n"
 		"function found_app_sshd() { return %d;}\n"
 		"function found_app_doh() { return %d;}\n"
 		"function found_app_stubby() { return %d;}\n"
+		"function found_app_zapret() { return %d;}\n"
 		"function found_app_tor() { return %d;}\n"
 		"function found_app_privoxy() { return %d;}\n"
 		"function found_app_dnscrypt() { return %d;}\n"
@@ -2311,12 +2333,14 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 		found_app_smbd,
 		found_app_nmbd,
 		found_app_ftpd,
+		found_app_ftpd_ssl,
 		found_app_l2tp,
 		found_srv_u2ec,
 		found_srv_lprd,
 		found_app_sshd,
 		found_app_doh,
 		found_app_stubby,
+		found_app_zapret,
 		found_app_tor,
 		found_app_privoxy,
 		found_app_dnscrypt,
@@ -3169,6 +3193,26 @@ apply_cgi(const char *url, webs_t wp)
 		websWrite(wp, "{\"sys_result\": %d}", sys_result);
 		return 0;
 	}
+	else if (!strcmp(value, " CheckCertHTTPS "))
+	{
+		int sys_result = 1;
+#if defined(SUPPORT_FTPD_SSL)
+		struct stat stat_buf;
+		if (get_login_safe())
+			sys_result = !stat(STORAGE_HTTPSSL_DIR "/server.crt", &stat_buf) && !stat(STORAGE_HTTPSSL_DIR "/server.key", &stat_buf) ? 1 : 0;
+#endif
+		websWrite(wp, "{\"sys_result\": %d}", sys_result);
+		return 0;
+	}
+	else if (!strcmp(value, " NTPSyncNow "))
+	{
+#define NTPC_SYNCNOW_SCRIPT		"/sbin/ntpc_syncnow"
+		int sys_result = 1;
+		if (get_login_safe())
+			sys_result = eval(NTPC_SYNCNOW_SCRIPT);
+		websWrite(wp, "{\"sys_result\": %d}", sys_result);
+		return 0;
+	}
 	else
 	{
 		char *sid_list, *serviceId;
@@ -4000,4 +4044,3 @@ struct ej_handler ej_handlers[] =
 	{ "openvpn_cli_cert_hook", openvpn_cli_cert_hook},
 	{ NULL, NULL }
 };
-

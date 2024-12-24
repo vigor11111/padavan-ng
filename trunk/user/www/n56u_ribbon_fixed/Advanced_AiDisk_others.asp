@@ -242,6 +242,84 @@ function change_smb_enabled(){
 	showhide_div('row_smb_fp', v);
 }
 
+var id_timeout_btn_gen;
+function flashing_text_gen(row_id,is_shown){
+	if (is_shown)
+        document.form.st_ftp_ssl_mode[row_id].text = 'Please wait...';
+	else
+        document.form.st_ftp_ssl_mode[row_id].text = '';
+	id_timeout_btn_gen = setTimeout("flashing_text_gen("+row_id+","+!is_shown+")", 250);
+}
+
+function reset_btn_gen(row_id,oldText){
+	var $line=$j('#row_ftp_ssl_mode');
+	$line.removeClass('alert-error').removeClass('alert-success');
+	document.form.st_ftp_ssl_mode[row_id].text = oldText;
+	document.form.st_ftp_ssl_mode.disabled = false;
+}
+
+function on_change_ftp_ssl_mode(enable){
+	var mode = document.form.st_ftp_ssl_mode.value;
+	if (mode != "0") {
+		$j.ajax({
+			type: "post",
+			url: "/apply.cgi",
+			data: {
+				action_mode: " CheckCertHTTPS "
+			},
+			dataType: "json",
+			error: function(xhr) {
+				return false;
+			},
+			success: function(response) {
+				var sys_result = (response != null && typeof response === 'object' && "sys_result" in response)
+					? response.sys_result : -1;
+				if (sys_result == 0)
+					create_server_cert(mode);
+			}
+		});
+	}
+}
+
+function create_server_cert(mode){
+	if (!confirm('<#FTPS_Query#>'))
+			document.form.st_ftp_ssl_mode.value = "0";
+	else {
+		var $line=$j('#row_ftp_ssl_mode');
+		var oldText = document.form.st_ftp_ssl_mode[mode].text;
+		document.form.st_ftp_ssl_mode.disabled = true;
+		flashing_text_gen(mode, 1);
+		$line.addClass('alert-error');
+
+		$j.ajax({
+			type: "post",
+			url: "/apply.cgi",
+			data: {
+				action_mode: " CreateCertHTTPS "
+			},
+			dataType: "json",
+			error: function(xhr) {
+				clearTimeout(id_timeout_btn_gen);
+				document.form.st_ftp_ssl_mode[mode].text = 'Failed!';
+				setTimeout("reset_btn_gen("+mode+",'"+oldText+"')", 1500);
+			},
+			success: function(response) {
+				var sys_result = (response != null && typeof response === 'object' && "sys_result" in response)
+					? response.sys_result : -1;
+				clearTimeout(id_timeout_btn_gen);
+				if(sys_result == 0){
+					$line.removeClass('alert-error').addClass('alert-success');
+					document.form.st_ftp_ssl_mode[mode].text = 'Success!';
+				setTimeout("reset_btn_gen("+mode+",'"+oldText+"')", 1000);
+				}else{
+					document.form.st_ftp_ssl_mode[mode].text = 'Failed!';
+				setTimeout("reset_btn_gen("+mode+",'"+oldText+"')", 1500);
+				}
+			}
+		});
+	}
+}
+
 function on_change_ftp_mode(enable){
 	var mode = document.form.st_ftp_mode.value;
 	var v = (mode == "3" || mode == "4") ? 1 : 0;
@@ -250,6 +328,11 @@ function on_change_ftp_mode(enable){
 
 function change_ftp_enabled(){
 	var v = document.form.enable_ftp[0].checked;
+	var ftps = found_app_ftpd_ssl();
+	if (ftps)
+		showhide_div('row_ftp_ssl_mode', v);
+	else
+		showhide_div('row_ftp_ssl_mode', 0);
 	showhide_div('row_ftp_mode', v);
 	showhide_div('row_ftp_log', v);
 	showhide_div('row_ftp_pasv', v);
@@ -282,7 +365,7 @@ function change_aria_enabled(){
 function applyRule(){
 	if(validForm()){
 		showLoading();
-		
+
 		document.form.action_mode.value = " Apply ";
 		document.form.current_page.value = "/Advanced_AiDisk_others.asp";
 		document.form.next_page.value = "";
@@ -467,7 +550,6 @@ function done_validating(action){
                                                         <input type="checkbox" id="enable_samba_fake" <% nvram_match_x("", "enable_samba", "1", "value=1 checked"); %><% nvram_match_x("", "enable_samba", "0", "value=0"); %>>
                                                     </div>
                                                 </div>
-
                                                 <div style="position: absolute; margin-left: -10000px;">
                                                     <input type="radio" name="enable_samba" id="enable_samba_1" value="1" onclick="change_smb_enabled();" <% nvram_match_x("", "enable_samba", "1", "checked"); %>/><#checkbox_Yes#>
                                                     <input type="radio" name="enable_samba" id="enable_samba_0" value="0" onclick="change_smb_enabled();" <% nvram_match_x("", "enable_samba", "0", "checked"); %>/><#checkbox_No#>
@@ -533,11 +615,23 @@ function done_validating(action){
                                                         <input type="checkbox" id="enable_ftp_fake" <% nvram_match_x("", "enable_ftp", "1", "value=1 checked"); %><% nvram_match_x("", "enable_ftp", "0", "value=0"); %>>
                                                     </div>
                                                 </div>
-
                                                 <div style="position: absolute; margin-left: -10000px;">
                                                     <input type="radio" name="enable_ftp" id="enable_ftp_1" value="1" onclick="change_ftp_enabled();" <% nvram_match_x("", "enable_ftp", "1", "checked"); %>/><#checkbox_Yes#>
                                                     <input type="radio" name="enable_ftp" id="enable_ftp_0" value="0" onclick="change_ftp_enabled();" <% nvram_match_x("", "enable_ftp", "0", "checked"); %>/><#checkbox_No#>
                                                 </div>
+                                            </td>
+                                        </tr>
+										<tr id="row_ftp_ssl_mode">
+										    <th>
+                                                <a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this,17, 4);"><#enableFTP_SSL#></a>
+                                            </th>
+                                            <td>
+                                                <select name="st_ftp_ssl_mode" class="input" style="width: 300px;" onchange="on_change_ftp_ssl_mode(1);">
+                                                    <option value="0" <% nvram_match_x("", "st_ftp_ssl_mode", "0", "selected"); %>><#enableFTP_SSL1#> (*)</option>
+                                                    <option value="1" <% nvram_match_x("", "st_ftp_ssl_mode", "1", "selected"); %>><#enableFTP_SSL2#></option>
+                                                    <option value="2" <% nvram_match_x("", "st_ftp_ssl_mode", "2", "selected"); %>><#enableFTP_SSL3#></option>
+                                                    <option value="3" <% nvram_match_x("", "st_ftp_ssl_mode", "3", "selected"); %>><#enableFTP_SSL4#></option>
+                                                </select>
                                             </td>
                                         </tr>
                                         <tr id="row_ftp_mode">
@@ -595,7 +689,6 @@ function done_validating(action){
                                                         <input type="checkbox" id="nfsd_enable_fake" <% nvram_match_x("", "nfsd_enable", "1", "value=1 checked"); %><% nvram_match_x("", "nfsd_enable", "0", "value=0"); %>>
                                                     </div>
                                                 </div>
-
                                                 <div style="position: absolute; margin-left: -10000px;">
                                                     <input type="radio" name="nfsd_enable" id="nfsd_enable_1" value="1" <% nvram_match_x("", "nfsd_enable", "1", "checked"); %>/><#checkbox_Yes#>
                                                     <input type="radio" name="nfsd_enable" id="nfsd_enable_0" value="0" <% nvram_match_x("", "nfsd_enable", "0", "checked"); %>/><#checkbox_No#>
@@ -618,7 +711,6 @@ function done_validating(action){
                                                         <input type="checkbox" id="apps_dms_fake" <% nvram_match_x("", "apps_dms", "1", "value=1 checked"); %><% nvram_match_x("", "apps_dms", "0", "value=0"); %>>
                                                     </div>
                                                 </div>
-
                                                 <div style="position: absolute; margin-left: -10000px;">
                                                     <input type="radio" name="apps_dms" id="apps_dms_1" value="1" onclick="change_dms_enabled();" <% nvram_match_x("", "apps_dms", "1", "checked"); %>/><#checkbox_Yes#>
                                                     <input type="radio" name="apps_dms" id="apps_dms_0" value="0" onclick="change_dms_enabled();" <% nvram_match_x("", "apps_dms", "0", "checked"); %>/><#checkbox_No#>
@@ -720,7 +812,7 @@ function done_validating(action){
                                         </tr>
                                         <tr>
                                             <th width="50%">
-                                                <a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this,17,11);"><#StorageEnableTRMD#></a>
+                                                <a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this,17,12);"><#StorageEnableTRMD#></a>
                                             </th>
                                             <td colspan="2">
                                                 <div class="main_itoggle">
@@ -728,7 +820,6 @@ function done_validating(action){
                                                         <input type="checkbox" id="trmd_enable_fake" <% nvram_match_x("", "trmd_enable", "1", "value=1 checked"); %><% nvram_match_x("", "trmd_enable", "0", "value=0"); %>>
                                                     </div>
                                                 </div>
-
                                                 <div style="position: absolute; margin-left: -10000px;">
                                                     <input type="radio" name="trmd_enable" id="trmd_enable_1" value="1" onclick="change_trmd_enabled();" <% nvram_match_x("", "trmd_enable", "1", "checked"); %>/><#checkbox_Yes#>
                                                     <input type="radio" name="trmd_enable" id="trmd_enable_0" value="0" onclick="change_trmd_enabled();" <% nvram_match_x("", "trmd_enable", "0", "checked"); %>/><#checkbox_No#>
@@ -762,7 +853,7 @@ function done_validating(action){
                                         </tr>
                                         <tr>
                                             <th width="50%">
-                                                <a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this,17,12);"><#StorageEnableAria#></a>
+                                                <a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this,17,13);"><#StorageEnableAria#></a>
                                             </th>
                                             <td colspan="2">
                                                 <div class="main_itoggle">
@@ -770,7 +861,6 @@ function done_validating(action){
                                                         <input type="checkbox" id="aria_enable_fake" <% nvram_match_x("", "aria_enable", "1", "value=1 checked"); %><% nvram_match_x("", "aria_enable", "0", "value=0"); %>>
                                                     </div>
                                                 </div>
-
                                                 <div style="position: absolute; margin-left: -10000px;">
                                                     <input type="radio" name="aria_enable" id="aria_enable_1" value="1" onclick="change_aria_enabled();" <% nvram_match_x("", "aria_enable", "1", "checked"); %>/><#checkbox_Yes#>
                                                     <input type="radio" name="aria_enable" id="aria_enable_0" value="0" onclick="change_aria_enabled();" <% nvram_match_x("", "aria_enable", "0", "checked"); %>/><#checkbox_No#>

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title><#Web_Title#> - WoL></title>
+<title><#Web_Title#> - <#menu5_2_6#></title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="-1">
@@ -12,7 +12,6 @@
 <link rel="stylesheet" type="text/css" href="/bootstrap/css/main.css">
 
 <script type="text/javascript" src="/jquery.js"></script>
-<script type="text/javascript" src="/bootstrap/js/jquery.xdomainajax.js"></script>
 <script type="text/javascript" src="/bootstrap/js/jquery.maskedinput-1.3.min.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/general.js"></script>
@@ -63,7 +62,7 @@ function get_resolved_clients()
     return clients;
 }
 
-// get mac vendors by api from site http://www.macvendorlookup.com/
+// get mac vendors by api from site https://maclookup.app/
 function getVendors()
 {
     var $macs = $j('#wol_table .mac');
@@ -78,17 +77,16 @@ function getVendors()
 
         if(company == null)
         {
-            // this ajax request with hack from xdomainajax.js
             $j.ajax({
-                url: 'http://www.macvendorlookup.com/api/v2/'+hw_addr+'/json',
+                url: 'https://api.maclookup.app/v2/macs/'+hw_addr+'?format=jsonp',
                 type: 'GET',
+                dataType: "jsonp",
                 success: function(response){
                     try{
-                        var vendorObj = JSON.parse($j(response.responseText).text())[0];
-                        $j(value).parents('tr').find('td.vendor').html(vendorObj.company);
+                        $j(value).parents('tr').find('td.vendor').html(response.company);
 
                         // add new vendor for saving to localStorage
-                        allMacs[hw_addr] = vendorObj.company;
+                        allMacs[hw_addr] = response.company;
 
                         // save vendor to localStorage
                         setToLocalStorage('hw_addr', JSON.stringify(allMacs));
@@ -195,7 +193,7 @@ $j(document).ready(function() {
 
         $j.each(devices, function(mac, name){
             var vendor = '';
-            var btn = '<button class="btn btn-info btn_wakeup">Wake up</button><div class="wol_response" class="alert"></div>';
+            var btn = '<button class="btn btn-info btn_wakeup"><#WOL_Wake_up#></button><div class="wol_response" class="alert"></div>';
 
             t_body += '<tr>\n';
             t_body += '  <td class="mac">'+mac+'</td>\n';
@@ -293,7 +291,7 @@ $j(document).ready(function() {
                 <div class="row-fluid">
                     <div class="span12">
                         <div class="box well grad_colour_dark_blue">
-                            <h2 class="box_head round_top"><#menu5_2#> - Wake-on-LAN</h2>
+                            <h2 class="box_head round_top"><#menu5_2#> - <#menu5_2_6#></h2>
                             <div class="round_bottom">
                                 <div class="row-fluid">
                                     <div id="tabMenu" class="submenuBlock"></div>
@@ -305,7 +303,7 @@ $j(document).ready(function() {
                                                 <input style="float: left; margin-right: 5px; font-family: monospace" id="wol_mac" type="text" maxlength="17" class="span12 mac" size="15" name="wol_mac" value="<% nvram_get_x("","wol_mac_last"); %>"/>
                                             </td>
                                             <td style="border-top: 0 none; ">
-                                                <input type="button" id="wol_btn" class="btn btn-primary" value="Wake-up" />
+                                                <input type="button" id="wol_btn" class="btn btn-primary" value="<#WOL_Wake_up#>" />
                                                 <div class="wol_response" class="alert"></div>
                                             </td>
                                         </tr>
@@ -315,7 +313,7 @@ $j(document).ready(function() {
                                         <tr>
                                             <th width="25%"><#MAC_Address#></th>
                                             <th width="25%"><#Computer_Name#></th>
-                                            <th width="35%">Vendor</th>
+                                            <th width="35%"><#WOL_Vendor#></th>
                                             <th width="15%">&nbsp;</th>
                                         </tr>
                                     </table>
