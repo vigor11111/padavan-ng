@@ -1,11 +1,10 @@
 SRC_NAME=openvpn-2.6.14
-SRC_URL=https://github.com/OpenVPN/openvpn/archive/refs/tags/v2.6.14.tar.gz
+SRC_URL=https://raw.githubusercontent.com/Tunnelblick/Tunnelblick/master/third_party/sources/openvpn/openvpn-2.6.14/openvpn-2.6.14.tar.gz
 
 CFLAGS += -ffunction-sections -fdata-sections -fvisibility=hidden
 LDFLAGS += -Wl,--gc-sections
 
 all: download_test extract_test config_test
-#all: config_test
 	$(MAKE) -j$(HOST_NCPU) -C $(SRC_NAME)
 
 download_test:
@@ -17,6 +16,17 @@ extract_test:
 	( if [ ! -d $(SRC_NAME) ]; then \
 		tar -xf $(SRC_NAME).tar.gz; \
 		patch -d $(SRC_NAME) -p1 -i ../openvpn-orig.patch; \
+		cd $(SRC_NAME); \
+		echo "Downloading and applying patches..."; \
+		patches="02-tunnelblick-openvpn_xorpatch-a.diff \
+		         03-tunnelblick-openvpn_xorpatch-b.diff \
+		         04-tunnelblick-openvpn_xorpatch-c.diff \
+		         05-tunnelblick-openvpn_xorpatch-d.diff \
+		         06-tunnelblick-openvpn_xorpatch-e.diff"; \
+		for patch in $$patches; do \
+			wget "https://raw.githubusercontent.com/Tunnelblick/Tunnelblick/master/third_party/sources/openvpn/openvpn-2.6.14/patches/$$patch"; \
+			git apply "$$patch"; \
+		done; \
 	fi )
 
 config_test:
