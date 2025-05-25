@@ -1,7 +1,7 @@
 FROM ubuntu:22.04
 
 ENV PROJECT="padavan-ng"
-ENV PROJECT_REPO="https://gitlab.com/hadzhioglu/${PROJECT}.git" \
+ENV PROJECT_REPO="https://gitlab.com/Lunatik-cyber/${PROJECT}.git" \
     BASE_DIR="/opt" \
     DEBIAN_FRONTEND="noninteractive"
 
