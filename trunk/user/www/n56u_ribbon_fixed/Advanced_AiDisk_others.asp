@@ -240,6 +240,7 @@ function change_smb_enabled(){
 	showhide_div('row_smb_mode', v);
 	showhide_div('row_smb_lmb', v);
 	showhide_div('row_smb_fp', v);
+	showhide_div('row_smb_conf', v);
 }
 
 var id_timeout_btn_gen;
@@ -550,7 +551,6 @@ function done_validating(action){
                                                         <input type="checkbox" id="enable_samba_fake" <% nvram_match_x("", "enable_samba", "1", "value=1 checked"); %><% nvram_match_x("", "enable_samba", "0", "value=0"); %>>
                                                     </div>
                                                 </div>
-
                                                 <div style="position: absolute; margin-left: -10000px;">
                                                     <input type="radio" name="enable_samba" id="enable_samba_1" value="1" onclick="change_smb_enabled();" <% nvram_match_x("", "enable_samba", "1", "checked"); %>/><#checkbox_Yes#>
                                                     <input type="radio" name="enable_samba" id="enable_samba_0" value="0" onclick="change_smb_enabled();" <% nvram_match_x("", "enable_samba", "0", "checked"); %>/><#checkbox_No#>
@@ -600,6 +600,14 @@ function done_validating(action){
                                                 </select>
                                             </td>
                                         </tr>
+                                        <tr id="row_smb_conf">
+                                            <td colspan="2">
+                                                <a href="javascript:spoiler_toggle('spoiler_conf')"><span><#CustomConf#> "smb.conf"</span></a>
+                                                <div id="spoiler_conf" style="display:none;">
+                                                    <textarea rows="16" wrap="off" spellcheck="false" maxlength="16384" class="span12" name="smbd.smb.conf" style="resize:none; font-family:'Courier New'; font-size:12px;"><% nvram_dump("smbd.smb.conf",""); %></textarea>
+                                                </div>
+                                            </td>
+                                        </tr>
                                     </table>
 
                                     <table id="tbl_ftpd" width="100%" cellpadding="4" cellspacing="0" class="table" style="display:none;">
@@ -616,15 +624,14 @@ function done_validating(action){
                                                         <input type="checkbox" id="enable_ftp_fake" <% nvram_match_x("", "enable_ftp", "1", "value=1 checked"); %><% nvram_match_x("", "enable_ftp", "0", "value=0"); %>>
                                                     </div>
                                                 </div>
-
                                                 <div style="position: absolute; margin-left: -10000px;">
                                                     <input type="radio" name="enable_ftp" id="enable_ftp_1" value="1" onclick="change_ftp_enabled();" <% nvram_match_x("", "enable_ftp", "1", "checked"); %>/><#checkbox_Yes#>
                                                     <input type="radio" name="enable_ftp" id="enable_ftp_0" value="0" onclick="change_ftp_enabled();" <% nvram_match_x("", "enable_ftp", "0", "checked"); %>/><#checkbox_No#>
                                                 </div>
                                             </td>
                                         </tr>
-										<tr id="row_ftp_ssl_mode">
-										    <th>
+                                        <tr id="row_ftp_ssl_mode">
+                                            <th>
                                                 <a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this,17, 4);"><#enableFTP_SSL#></a>
                                             </th>
                                             <td>
@@ -691,7 +698,6 @@ function done_validating(action){
                                                         <input type="checkbox" id="nfsd_enable_fake" <% nvram_match_x("", "nfsd_enable", "1", "value=1 checked"); %><% nvram_match_x("", "nfsd_enable", "0", "value=0"); %>>
                                                     </div>
                                                 </div>
-
                                                 <div style="position: absolute; margin-left: -10000px;">
                                                     <input type="radio" name="nfsd_enable" id="nfsd_enable_1" value="1" <% nvram_match_x("", "nfsd_enable", "1", "checked"); %>/><#checkbox_Yes#>
                                                     <input type="radio" name="nfsd_enable" id="nfsd_enable_0" value="0" <% nvram_match_x("", "nfsd_enable", "0", "checked"); %>/><#checkbox_No#>
@@ -714,7 +720,6 @@ function done_validating(action){
                                                         <input type="checkbox" id="apps_dms_fake" <% nvram_match_x("", "apps_dms", "1", "value=1 checked"); %><% nvram_match_x("", "apps_dms", "0", "value=0"); %>>
                                                     </div>
                                                 </div>
-
                                                 <div style="position: absolute; margin-left: -10000px;">
                                                     <input type="radio" name="apps_dms" id="apps_dms_1" value="1" onclick="change_dms_enabled();" <% nvram_match_x("", "apps_dms", "1", "checked"); %>/><#checkbox_Yes#>
                                                     <input type="radio" name="apps_dms" id="apps_dms_0" value="0" onclick="change_dms_enabled();" <% nvram_match_x("", "apps_dms", "0", "checked"); %>/><#checkbox_No#>
@@ -824,7 +829,6 @@ function done_validating(action){
                                                         <input type="checkbox" id="trmd_enable_fake" <% nvram_match_x("", "trmd_enable", "1", "value=1 checked"); %><% nvram_match_x("", "trmd_enable", "0", "value=0"); %>>
                                                     </div>
                                                 </div>
-
                                                 <div style="position: absolute; margin-left: -10000px;">
                                                     <input type="radio" name="trmd_enable" id="trmd_enable_1" value="1" onclick="change_trmd_enabled();" <% nvram_match_x("", "trmd_enable", "1", "checked"); %>/><#checkbox_Yes#>
                                                     <input type="radio" name="trmd_enable" id="trmd_enable_0" value="0" onclick="change_trmd_enabled();" <% nvram_match_x("", "trmd_enable", "0", "checked"); %>/><#checkbox_No#>
@@ -866,7 +870,6 @@ function done_validating(action){
                                                         <input type="checkbox" id="aria_enable_fake" <% nvram_match_x("", "aria_enable", "1", "value=1 checked"); %><% nvram_match_x("", "aria_enable", "0", "value=0"); %>>
                                                     </div>
                                                 </div>
-
                                                 <div style="position: absolute; margin-left: -10000px;">
                                                     <input type="radio" name="aria_enable" id="aria_enable_1" value="1" onclick="change_aria_enabled();" <% nvram_match_x("", "aria_enable", "1", "checked"); %>/><#checkbox_Yes#>
                                                     <input type="radio" name="aria_enable" id="aria_enable_0" value="0" onclick="change_aria_enabled();" <% nvram_match_x("", "aria_enable", "0", "checked"); %>/><#checkbox_No#>

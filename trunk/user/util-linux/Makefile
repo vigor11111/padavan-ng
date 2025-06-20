@@ -1,5 +1,6 @@
-SRC_NAME=util-linux-2.39.4
-SRC_URL=https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v2.39/$(SRC_NAME).tar.xz
+SRC_VERSION=2.41
+SRC_NAME=util-linux-$(SRC_VERSION)
+SRC_URL=https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v$(SRC_VERSION)/$(SRC_NAME).tar.xz
 THISDIR = $(shell pwd)
 
 CFLAGS += -ffunction-sections -fdata-sections
@@ -18,7 +19,7 @@ download_test:
 extract_test:
 	( if [ ! -d $(SRC_NAME) ]; then \
 		tar xJf $(SRC_NAME).tar.xz; \
-		patch -d $(SRC_NAME) -p1 -i ../libblkid.patch; \
+		patch -d $(SRC_NAME) -p1 -i ../$(SRC_NAME).patch; \
 	fi )
 
 config_test:
@@ -50,6 +51,7 @@ configure:
 		--without-btrfs \
 		--without-readline \
 		--enable-libblkid \
+		--enable-blkid \
 		--enable-libuuid \
 		--disable-cal \
 		--disable-fdformat \
@@ -106,6 +108,8 @@ configure:
 		--disable-use-tty-group \
 		--disable-makeinstall-chown \
 		--disable-makeinstall-setuid \
+		--disable-liblastlog2 \
+		--disable-year2038 \
 		--host=$(HOST_TARGET) \
 		--build=$(HOST_BUILD) ; \
 	)

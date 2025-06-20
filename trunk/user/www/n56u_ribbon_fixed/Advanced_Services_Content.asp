@@ -33,6 +33,7 @@ $j(document).ready(function() {
 	init_itoggle('watchdog_cpu');
 	init_itoggle('doh_enable', change_doh_enabled);
 	init_itoggle('stubby_enable', change_stubby_enabled);
+	init_itoggle('zapret_enable', change_zapret_enabled);
 	init_itoggle('tor_enable', change_tor_enabled);
 	init_itoggle('privoxy_enable', change_privoxy_enabled);
 	init_itoggle('dnscrypt_enable', change_dnscrypt_enabled);
@@ -91,9 +92,19 @@ function initial(){
 		showhide_div('row_iperf3', 0);
 	}
 
-	if(found_app_doh() || found_app_stubby() || found_app_tor() || found_app_privoxy() || found_app_dnscrypt()){
+	if(found_app_doh() || found_app_stubby() || found_app_zapret() || found_app_tor() || found_app_privoxy() || found_app_dnscrypt()){
 		showhide_div('tbl_anon', 1);
 	}
+
+	$j('#doh_server_list1 option').clone().appendTo('#doh_server_list2');
+	$j('#doh_server_list1 option').clone().appendTo('#doh_server_list3');
+	$j('#doh_server_list1 option').clone().appendTo('#doh_server_list4');
+
+// fix for firefox
+	$j('#doh_server_list1').prop('selectedIndex', -1)
+	$j('#doh_server_list2').prop('selectedIndex', -1)
+	$j('#doh_server_list3').prop('selectedIndex', -1)
+	$j('#doh_server_list4').prop('selectedIndex', -1)
 
 	if(!found_app_doh()){
 		showhide_div('row_doh', 0);
@@ -107,21 +118,31 @@ function initial(){
 		showhide_div('row_doh_conf8', 0);
 	}else{
 		change_doh_enabled();
-		}
+	}
 
 	if(!found_app_stubby()){
 		showhide_div('row_stubby', 0);
 		showhide_div('row_stubby_conf', 0);
 	}else{
 		change_stubby_enabled();
-		}
+	}
+
+	if(!found_app_zapret()){
+		showhide_div('row_zapret', 0);
+		showhide_div('row_zapret_strategy', 0);
+		showhide_div('row_zapret_config', 0);
+		showhide_div('row_zapret_list', 0);
+		showhide_div('row_zapret_script', 0);
+	}else{
+		change_zapret_enabled();
+	}
 
 	if(!found_app_tor()){
 		showhide_div('row_tor', 0);
 		showhide_div('row_tor_conf', 0);
 	}else{
 		change_tor_enabled();
-		}
+	}
 
 	if(!found_app_privoxy()){
 		showhide_div('row_privoxy', 0);
@@ -141,6 +162,7 @@ function initial(){
 		showhide_div('row_dnscrypt_options', 0);
 	}else
 		change_dnscrypt_enabled();
+
 }
 
 function applyRule(){
@@ -169,6 +191,14 @@ function applyRule(){
 	if(!found_app_stubby()){
 		showhide_div('row_stubby', 0);
 		showhide_div('row_stubby_conf', 0);
+	}
+
+	if(!found_app_zapret()){
+		showhide_div('row_zapret', 0);
+		showhide_div('row_zapret_strategy', 0);
+		showhide_div('row_zapret_config', 0);
+		showhide_div('row_zapret_list', 0);
+		showhide_div('row_zapret_script', 0);
 	}
 
 	if(!found_app_tor()){
@@ -241,6 +271,14 @@ function textarea_sshd_enabled(v){
 
 function textarea_stubby_enabled(v){
 	inputCtrl(document.form['stubbyc.stubby.yml'], v);
+}
+
+function textarea_zapret_enabled(v){
+	inputCtrl(document.form['zapretc.strategy'], v);
+	inputCtrl(document.form['zapretc.user.list'], v);
+	inputCtrl(document.form['zapretc.auto.list'], v);
+	inputCtrl(document.form['zapretc.exclude.list'], v);
+	inputCtrl(document.form['zapretc.config'], v);
 }
 
 function textarea_tor_enabled(v){
@@ -357,12 +395,27 @@ function change_doh_enabled(){
 	showhide_div('row_doh_conf8', v);
 }
 
+function on_doh_select_change(selectObject, i){
+	if ( !$j(selectObject).val() ) return false;
+	$j('input[name=' + "doh_server" + i +']').val($j(selectObject).val()).focus();
+}
+
 function change_stubby_enabled(){
 	var v = document.form.stubby_enable[0].checked;
 	showhide_div('row_stubby_conf', v);
 	if (!login_safe())
 		v = 0;
 	textarea_stubby_enabled(v);
+}
+
+function change_zapret_enabled(){
+	var v = document.form.zapret_enable[0].checked;
+	showhide_div('row_zapret_strategy', v);
+	showhide_div('row_zapret_config', v);
+	showhide_div('row_zapret_list', v);
+	showhide_div('row_zapret_script', v);
+	if (!login_safe()) v = 0;
+	textarea_zapret_enabled(v);
 }
 
 function change_tor_enabled(){
@@ -678,56 +731,102 @@ function change_crond_enabled(){
                                         </tr>
                                         <tr id="row_doh_conf1" style="display:none">
                                             <td colspan="2" align="left" style="text-align:left;">
-                                                <span>DoH Server 1:  </span>
-                                                <input type="text" maxlength="60" class="input" size="10" style="width: 374px;" name="doh_server1" value="<% nvram_get_x("", "doh_server1"); %>" onkeypress="return is_string(this,event);"/>&nbsp;:
-                                                &nbsp;<span style="color:#888;">[65055]</span>
+                                                <span class="caption-bold">DoH Server 1:</span>
+                                                <input type="text" maxlength="60" class="input" size="10" style="width: 354px;" name="doh_server1" value="<% nvram_get_x("", "doh_server1"); %>" onkeypress="return is_string(this,event);"/>
+                                                <select class="input" id="doh_server_list1" style="max-width:20px;" onchange="on_doh_select_change(this, 1)" onclick="this.selectedIndex=-1;">
+                                                    <option value="https://0ms.dev/dns-query">0ms DNS</option>
+                                                    <option value="https://dns.adguard-dns.com/dns-query">Adguard: ads and trackers</option>
+                                                    <option value="https://family.adguard-dns.com/dns-query">Adguard: family filter</option>
+                                                    <option value="https://unfiltered.adguard-dns.com/dns-query">Adguard: unfiltered</option>
+                                                    <option value="https://blitz.ahadns.com/1:1">AhaDNS: ads, malware, privacy</option>
+                                                    <option value="https://blitz.ahadns.com/1:27">AhaDNS: no-Google</option>
+                                                    <option value="https://blitz.ahadns.com/1:4">AhaDNS: privacy</option>
+                                                    <option value="https://blitz.ahadns.com/1:5">AhaDNS: privacy strict</option>
+                                                    <option value="https://dns.alidns.com/dns-query">Ali DNS</option>
+                                                    <option value="https://dns.bebasid.com/dns-query">BebasDNS</option>
+                                                    <option value="https://antivirus.bebasid.com/dns-query">BebasDNS: antivirus</option>
+                                                    <option value="https://internetsehat.bebasid.com/dns-query">BebasDNS: family</option>
+                                                    <option value="https://dns.bebasid.com/unfiltered">BebasDNS: unfiltered</option>
+                                                    <option value="https://doh.opendns.com/dns-query">Cisco OpenDNS</option>
+                                                    <option value="https://doh.familyshield.opendns.com/dns-query">Cisco OpenDNS: family</option>
+                                                    <option value="https://doh.sandbox.opendns.com/dns-query">Cisco OpenDNS: unfiltered</option>
+                                                    <option value="https://doh.cleanbrowsing.org/doh/adult-filter">CleanBrowsing: adult</option>
+                                                    <option value="https://doh.cleanbrowsing.org/doh/family-filter">CleanBrowsing: family</option>
+                                                    <option value="https://doh.cleanbrowsing.org/doh/security-filter">CleanBrowsing: security</option>
+                                                    <option value="https://dns.cloudflare.com/dns-query">Cloudflare</option>
+                                                    <option value="https://family.cloudflare-dns.com/dns-query">Cloudflare: family</option>
+                                                    <option value="https://security.cloudflare-dns.com/dns-query">Cloudflare: security</option>
+                                                    <option value="https://dns.comss.one/dns-query">Comss.one DNS</option>
+                                                    <option value="https://freedns.controld.com/p2">ControlD: ads and trackers</option>
+                                                    <option value="https://freedns.controld.com/family">ControlD: family filter</option>
+                                                    <option value="https://freedns.controld.com/p1">ControlD: malware</option>
+                                                    <option value="https://freedns.controld.com/p0">ControlD: unfiltered</option>
+                                                    <option value="https://dns.decloudus.com/dns-query">DeCloudUs DNS</option>
+                                                    <option value="https://dns.pub/dns-query">DNSPod Public DNS+</option>
+                                                    <option value="https://doh.dns.sb/dns-query">DNS.SB</option>
+                                                    <option value="https://dns.google/dns-query">Google</option>
+                                                    <option value="https://dns.nextdns.io">NextDNS</option>
+                                                    <option value="https://ada.openbld.net/dns-query">OpenBLD.net DNS</option>
+                                                    <option value="https://dns.quad9.net/dns-query">Quad9</option>
+                                                    <option value="https://family.rabbitdns.org/dns-query">Rabbit DNS: family</option>
+                                                    <option value="https://security.rabbitdns.org/dns-query">Rabbit DNS: security</option>
+                                                    <option value="https://dns.rabbitdns.org/dns-query">Rabbit DNS: unfiltered</option>
+                                                    <option value="https://wikimedia-dns.org/dns-query">Wikimedia DNS</option>
+                                                    <option value="https://common.dot.dns.yandex.net/dns-query">Yandex</option>
+                                                    <option value="https://family.dot.dns.yandex.net/dns-query">Yandex: family</option>
+                                                    <option value="https://safe.dot.dns.yandex.net/dns-query">Yandex: security</option>
+                                                </select>
+                                                &nbsp;:&nbsp;<span style="color:#888;">[65055]</span>
                                         </td>
                                         </tr>
                                         <tr id="row_doh_conf2" style="display:none">
                                             <td colspan="2" align="left" style="text-align:left;">
-                                                <span>Options:       </span>
+                                                <span class="caption-bold">Options:</span>
                                                 <input type="text" maxlength="55" class="input" size="10" style="width: 225px;" name="doh_opt1_1" value="<% nvram_get_x("", "doh_opt1_1"); %>" onkeypress="return is_string(this,event);"/>&nbsp; 
                                                 <input type="text" maxlength="85" class="input" size="10" style="width: 230px;" name="doh_opt2_1" value="<% nvram_get_x("", "doh_opt2_1"); %>" onkeypress="return is_string(this,event);"/>
                                             </td>
                                         </tr>
                                         <tr id="row_doh_conf3" style="display:none">
                                             <td colspan="2" align="left" style="text-align:left;">
-                                                <span>DoH Server 2:  </span>
-                                                <input type="text" maxlength="60" class="input" size="10" style="width: 374px;" name="doh_server2" value="<% nvram_get_x("", "doh_server2"); %>" onkeypress="return is_string(this,event);"/>&nbsp;:
-                                                &nbsp;<span style="color:#888;">[65056]</span>
+                                                <span class="caption-bold">DoH Server 2:</span>
+                                                <input type="text" maxlength="60" class="input" size="10" style="width: 354px;" name="doh_server2" value="<% nvram_get_x("", "doh_server2"); %>" onkeypress="return is_string(this,event);"/>
+                                                <select class="input" id="doh_server_list2" style="max-width:20px;" onchange="on_doh_select_change(this, 2)" onfocus="this.selectedIndex=-1;"></select>
+                                                &nbsp;:&nbsp;<span style="color:#888;">[65056]</span>
                                             </td>
                                         </tr>
                                         <tr id="row_doh_conf4" style="display:none">
                                             <td colspan="2" align="left" style="text-align:left;">
-                                                <span">Options:       </span>
+                                                <span class="caption-bold">Options:</span>
                                                 <input type="text" maxlength="55" class="input" size="10" style="width: 225px;" name="doh_opt1_2" value="<% nvram_get_x("", "doh_opt1_2"); %>" onkeypress="return is_string(this,event);"/>&nbsp; 
                                                 <input type="text" maxlength="85" class="input" size="10" style="width: 230px;" name="doh_opt2_2" value="<% nvram_get_x("", "doh_opt2_2"); %>" onkeypress="return is_string(this,event);"/>
                                             </td>
                                         </tr>
                                         <tr id="row_doh_conf5" style="display:none">
                                             <td colspan="2" align="left" style="text-align:left;">
-                                                <span>DoH Server 3:  </span>
-                                                <input type="text" maxlength="60" class="input" size="10" style="width: 374px;" name="doh_server3" value="<% nvram_get_x("", "doh_server3"); %>" onkeypress="return is_string(this,event);"/>&nbsp;:
-                                                &nbsp;<span style="color:#888;">[65057]</span>
+                                                <span class="caption-bold">DoH Server 3:</span>
+                                                <input type="text" maxlength="60" class="input" size="10" style="width: 354px;" name="doh_server3" value="<% nvram_get_x("", "doh_server3"); %>" onkeypress="return is_string(this,event);"/>
+                                                <select class="input" id="doh_server_list3" style="max-width:20px;" onchange="on_doh_select_change(this, 3)" onfocus="this.selectedIndex=-1;"></select>
+                                                &nbsp;:&nbsp;<span style="color:#888;">[65057]</span>
                                             </td>
                                         </tr>
                                         <tr id="row_doh_conf6" style="display:none">
                                             <td colspan="2" align="left" style="text-align:left;">
-                                                <span>Options:       </span>
+                                                <span class="caption-bold">Options:</span>
                                                 <input type="text" maxlength="55" class="input" size="10" style="width: 225px;" name="doh_opt1_3" value="<% nvram_get_x("", "doh_opt1_3"); %>" onkeypress="return is_string(this,event);"/>&nbsp; 
                                                 <input type="text" maxlength="85" class="input" size="10" style="width: 230px;" name="doh_opt2_3" value="<% nvram_get_x("", "doh_opt2_3"); %>" onkeypress="return is_string(this,event);"/>
                                             </td>
                                         </tr>
                                         <tr id="row_doh_conf7" style="display:none">
                                             <td colspan="2" align="left" style="text-align:left;">
-                                                <span>DoH Server 4:  </span>
-                                                <input type="text" maxlength="60" class="input" size="10" style="width: 374px;" name="doh_server4" value="<% nvram_get_x("", "doh_server4"); %>" onkeypress="return is_string(this,event);"/>&nbsp;:
-                                                &nbsp;<span style="color:#888;">[65058]</span>
+                                                <span class="caption-bold">DoH Server 4:</span>
+                                                <input type="text" maxlength="60" class="input" size="10" style="width: 354px;" name="doh_server4" value="<% nvram_get_x("", "doh_server4"); %>" onkeypress="return is_string(this,event);"/>
+                                                <select class="input" id="doh_server_list4" style="max-width:20px;" onchange="on_doh_select_change(this, 4)" onfocus="this.selectedIndex=-1;"></select>
+                                                &nbsp;:&nbsp;<span style="color:#888;">[65058]</span>
                                             </td>
                                         </tr>
                                         <tr id="row_doh_conf8" style="display:none">
                                             <td colspan="2" align="left" style="text-align:left;">
-                                                <span>Options:       </span>
+                                                <span class="caption-bold">Options:</span>
                                                 <input type="text" maxlength="55" class="input" size="10" style="width: 225px;" name="doh_opt1_4" value="<% nvram_get_x("", "doh_opt1_4"); %>" onkeypress="return is_string(this,event);"/>&nbsp; 
                                                 <input type="text" maxlength="85" class="input" size="10" style="width: 230px;" name="doh_opt2_4" value="<% nvram_get_x("", "doh_opt2_4"); %>" onkeypress="return is_string(this,event);"/>
                                             </td>
@@ -752,6 +851,77 @@ function change_crond_enabled(){
                                                 <a href="javascript:spoiler_toggle('stubby.yml')"><span><#CustomConf#> "stubby.yml"</span></a>
                                                 <div id="stubby.yml" style="display:none;">
                                                     <textarea rows="16" wrap="off" spellcheck="false" maxlength="8192" class="span12" name="stubbyc.stubby.yml" style="resize:none; font-family:'Courier New'; font-size:12px;"><% nvram_dump("stubbyc.stubby.yml",""); %></textarea>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr id="row_zapret">
+                                            <th width="50%"><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this, 25, 3);"><#Adm_Svc_zapret#></a></th>
+                                            <td>
+                                                <div class="main_itoggle">
+                                                    <div id="zapret_enable_on_of">
+                                                        <input type="checkbox" id="zapret_enable_fake" <% nvram_match_x("", "zapret_enable", "1", "value=1 checked"); %><% nvram_match_x("", "zapret_enable", "0", "value=0"); %>>
+                                                    </div>
+                                                </div>
+                                                <div style="position: absolute; margin-left: -10000px;">
+                                                    <input type="radio" name="zapret_enable" id="zapret_enable_1" class="input" value="1" <% nvram_match_x("", "zapret_enable", "1", "checked"); %>/><#checkbox_Yes#>
+                                                    <input type="radio" name="zapret_enable" id="zapret_enable_0" class="input" value="0" <% nvram_match_x("", "zapret_enable", "0", "checked"); %>/><#checkbox_No#>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr id="row_zapret_list" style="display:none">
+                                            <td colspan="2">
+                                                <a href="javascript:spoiler_toggle('site.list')"><span><#ZapretSitesLists#></span></a>
+                                                <div id="site.list" style="display:none;">
+                                                    <table height="100%" width="100%" cellpadding="0" cellspacing="0" class="table" style="border: 0px; margin: 0px; margin-bottom: 8px;">
+                                                        <tr>
+                                                            <td style="border:0px; padding-bottom: 4px;">
+                                                                <#ZapretCustomList#>:
+                                                            </td>
+                                                            <td style="border:0px; padding-bottom: 4px; padding-left: 11px;">
+                                                                <#ZapretAutomaticList#>:
+                                                            </td>
+                                                            <td style="border:0px; padding-bottom: 4px; padding-left: 13px;">
+                                                                <#ZapretExclusionList#>:
+                                                            </td>
+                                                        </tr>
+                                                        <tr height="100%">
+                                                            <td style="border:0px; width: 33%; padding: 0px; padding-right: 5px; vertical-align: top;">
+                                                                <textarea rows="16" wrap="off" spellcheck="false" maxlength="8192" class="span12" name="zapretc.user.list" style="height: 100%; margin-bottom: 0px; resize:vertical; font-family:'Courier New'; font-size:12px;"><% nvram_dump("zapretc.user.list",""); %></textarea>
+                                                            </td>
+                                                            <td style="border:0px; width: 33%; padding: 0px; padding-left: 3px; padding-right: 3px; vertical-align: top;">
+                                                                <textarea rows="16" wrap="off" spellcheck="false" maxlength="8192" class="span12" name="zapretc.auto.list" style="height: 100%; margin-bottom: 0px; resize:vertical; font-family:'Courier New'; font-size:12px;"><% nvram_dump("zapretc.auto.list",""); %></textarea>
+                                                            </td>
+                                                            <td style="border:0px; width: 33%; padding: 0px; padding-left: 5px; vertical-align: top;">
+                                                                <textarea rows="16" wrap="off" spellcheck="false" maxlength="8192" class="span12" name="zapretc.exclude.list" style="height: 100%; margin-bottom: 0px; resize:vertical; font-family:'Courier New'; font-size:12px;"><% nvram_dump("zapretc.exclude.list",""); %></textarea>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr id="row_zapret_strategy" style="display:none">
+                                            <td colspan="2">
+                                                <a href="javascript:spoiler_toggle('zapret.strategy')"><span><#ZapretStrategy#></span></a>
+                                                <div id="zapret.strategy" style="display:none;">
+                                                    <textarea rows="24" wrap="off" spellcheck="false" maxlength="8192" class="span12" name="zapretc.strategy" style="resize:vertical; font-family:'Courier New'; font-size:12px;"><% nvram_dump("zapretc.strategy",""); %></textarea>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr id="row_zapret_config" style="display:none">
+                                            <td colspan="2">
+                                                <a href="javascript:spoiler_toggle('zapret.config')"><span><#CustomConf#></span></a>
+                                                <div id="zapret.config" style="display:none;">
+                                                    <textarea rows="8" wrap="off" spellcheck="false" maxlength="8192" class="span12" name="zapretc.config" style="resize:vertical; font-family:'Courier New'; font-size:12px;"><% nvram_dump("zapretc.config",""); %></textarea>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr id="row_zapret_script" style="display:none">
+                                            <td colspan="2">
+                                                <a href="javascript:spoiler_toggle('zapret.post_script.sh')"><span><#CustomConf#> "post_script.sh"</span></a>
+                                                <div id="zapret.post_script.sh" style="display:none;">
+                                                    <textarea rows="16" wrap="off" spellcheck="false" maxlength="8192" class="span12" name="zapretc.post_script.sh" style="resize:none; font-family:'Courier New'; font-size:12px;"><% nvram_dump("zapretc.post_script.sh",""); %></textarea>
                                                 </div>
                                             </td>
                                         </tr>
@@ -827,7 +997,7 @@ function change_crond_enabled(){
                                         </tr>
 
                                         <tr id="row_dnscrypt">
-                                            <th width="50%"><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this, 25, 3);"><#Adm_Svc_dnscrypt#></a></th>
+                                            <th width="50%"><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this, 25, 4);"><#Adm_Svc_dnscrypt#></a></th>
                                             <td>
                                                 <div class="main_itoggle">
                                                     <div id="dnscrypt_enable_on_of">
@@ -869,7 +1039,7 @@ function change_crond_enabled(){
                                             </td>
                                         </tr>
                                         <tr id="row_dnscrypt_force_dns" style="display:none;">
-                                            <th width="50%"><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this, 25, 4);"><#Adm_Svc_dnscrypt_force_dns#></a></th>
+                                            <th width="50%"><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this, 25, 5);"><#Adm_Svc_dnscrypt_force_dns#></a></th>
                                             <td>
                                                 <select name="dnscrypt_force_dns" class="input">
                                                     <option value="0" <% nvram_match_x("", "dnscrypt_force_dns", "0", "selected"); %>><#checkbox_No#> (*)</option>
@@ -878,7 +1048,7 @@ function change_crond_enabled(){
                                             </td>
                                         </tr>
                                         <tr id="row_dnscrypt_options" style="display:none">
-                                            <th width="50%"><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this, 25, 5);"><#Adm_Svc_dnscrypt_options#></a></th>
+                                            <th width="50%"><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this, 25, 6);"><#Adm_Svc_dnscrypt_options#></a></th>
                                             <td>
                                                 <input type="text" maxlength="128" size="15" name="dnscrypt_options" class="input" value="<% nvram_get_x("", "dnscrypt_options"); %>" onkeypress="return is_string(this,event);"/>
                                             </td>

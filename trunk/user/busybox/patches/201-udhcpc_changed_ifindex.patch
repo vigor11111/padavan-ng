@@ -1,6 +1,6 @@
 --- a/networking/udhcp/dhcpc.c
 +++ b/networking/udhcp/dhcpc.c
-@@ -1404,6 +1404,12 @@ int udhcpc_main(int argc UNUSED_PARAM, c
+@@ -1394,6 +1394,12 @@ int udhcpc_main(int argc UNUSED_PARAM, c
  		struct pollfd pfds[2];
  		struct dhcp_packet packet;
  

@@ -46,20 +46,32 @@ struct Options {
   // 3 = Use only HTTP/3 QUIC
   int use_http_version;
 
+  int max_idle_time;
+
   // Print statistic interval
   int stats_interval;
 
   // Path to a file containing CA certificates
   const char *ca_info;
+
+  // Number of logs to be kept by flight recorder
+  uint32_t flight_recorder_size;
 } __attribute__((aligned(128)));
 typedef struct Options options_t;
+
+enum OptionsParseResult {
+    OPR_SUCCESS,
+    OPR_HELP,
+    OPR_VERSION,
+    OPR_OPTION_ERROR,
+    OPR_PARSING_ERROR
+};
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-const char * options_sw_version(void);
 void options_init(struct Options *opt);
-int options_parse_args(struct Options *opt, int argc, char **argv);
+enum OptionsParseResult options_parse_args(struct Options *opt, int argc, char **argv);
 void options_show_usage(int argc, char **argv);
 void options_cleanup(struct Options *opt);
 #ifdef __cplusplus

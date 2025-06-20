@@ -90,6 +90,7 @@
 #define NTPC_DONE_SCRIPT		"/sbin/ntpc_updated"
 
 #define SAMBA_CONF			"/etc/smb.conf"
+#define SAMBA_CONF_USER		"/etc/storage/smb.conf"
 
 #define STORAGE_MINIDLNA_CUSTOM_ICON_DIR "/etc/storage/minidlna"
 
@@ -535,6 +536,13 @@ int is_stubby_run(void);
 void stop_stubby(void);
 void start_stubby(void);
 void restart_stubby(void);
+#endif
+#if defined(APP_ZAPRET)
+int is_zapret_run(void);
+void stop_zapret(void);
+void start_zapret(void);
+void restart_zapret(void);
+void reload_zapret(void);
 #endif
 #if defined(APP_TOR)
 int is_tor_run(void);

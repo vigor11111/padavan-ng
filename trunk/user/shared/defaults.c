@@ -219,7 +219,10 @@ struct nvram_pair router_defaults[] = {
 	{ "wl_stream_rx", STR(BOARD_NUM_ANT_5G_RX) },
 	{ "wl_preamble", "1" },
 	{ "wl_greenap", "0" },		/* 5GHz GreenAP */
+	{ "wl_pmf", "0" },
+	{ "wl_pmfsha256", "0" },
 	{ "wl_ldpc", "0" },
+	{ "wl_stbc", "0" },
 	{ "wl_HT_RDG", "0" },
 	{ "wl_HT_AMSDU", "0" },
 	{ "wl_HT_MpduDensity", "5" },
@@ -318,7 +321,10 @@ struct nvram_pair router_defaults[] = {
 	{ "rt_stream_rx", STR(BOARD_NUM_ANT_2G_RX) },
 	{ "rt_preamble", "1" },
 	{ "rt_greenap", "0" },		/* 2.4GHz GreenAP */
+	{ "rt_pmf", "0" },
+	{ "rt_pmfsha256", "0" },
 	{ "rt_ldpc", "0" },
+	{ "rt_stbc", "1" },
 	{ "rt_HT_RDG", "0" },
 	{ "rt_HT_AMSDU", "0" },
 	{ "rt_HT_MpduDensity", "5" },
@@ -617,21 +623,24 @@ struct nvram_pair router_defaults[] = {
 	{ "wins_enable", "0" },
 #if defined (APP_DOH)
 	{ "doh_enable", "0" },
-	{ "doh_server1", "https://blitz.ahadns.com/1:4" },
-	{ "doh_server2", "https://freedns.controld.com/x-1hosts-lite" },
-	{ "doh_server3", "https://sky.rethinkdns.com/1:AAQCAA==" },
+	{ "doh_server1", "https://freedns.controld.com/x-1hosts-lite" },
+	{ "doh_server2", "https://sky.rethinkdns.com/1:AAQCAA==" },
+	{ "doh_server3", "" },
 	{ "doh_server4", "" },
-	{ "doh_opt1_1", "-d -4 -v" },
+	{ "doh_opt1_1", "-u nobody -g nogroup -d -4 -v" },
 	{ "doh_opt2_1", "1.1.1.1,8.8.8.8,9.9.9.9,208.67.222.222" },
-	{ "doh_opt1_2", "-d -4 -v" },
+	{ "doh_opt1_2", "-u nobody -g nogroup -d -4 -v" },
 	{ "doh_opt2_2", "1.1.1.1,8.8.8.8,9.9.9.9,208.67.222.222" },
-	{ "doh_opt1_3", "-d -4 -v" },
-	{ "doh_opt2_3", "1.1.1.1,8.8.8.8,9.9.9.9,208.67.222.222" },
+	{ "doh_opt1_3", "" },
+	{ "doh_opt2_3", "" },
 	{ "doh_opt1_4", "" },
 	{ "doh_opt2_4", "" },
 #endif
 #if defined (APP_STUBBY)
 	{ "stubby_enable", "0" },
+#endif
+#if defined (APP_ZAPRET)
+	{ "zapret_enable", "0" },
 #endif
 #if defined (APP_TOR)
 	{ "tor_enable", "0" },

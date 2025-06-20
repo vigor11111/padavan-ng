@@ -1,4 +1,4 @@
-SRC_NAME=dropbear-2024.85
+SRC_NAME=dropbear-2025.88
 SRC_URL=https://matt.ucc.asn.au/dropbear/releases/$(SRC_NAME).tar.bz2
 
 ifeq ($(CONFIG_FIRMWARE_INCLUDE_SFTP),y)
@@ -7,7 +7,9 @@ else
 COPT=-DSFTPSERVER_PATH=\"/opt/libexec/sftp-server\"
 endif
 ifneq ($(CONFIG_FIRMWARE_INCLUDE_DROPBEAR_FAST_CODE),y)
-COPT+=-DDROPBEAR_SMALL_CODE
+COPT+=-DDROPBEAR_SMALL_CODE=1
+else
+COPT+=-DDROPBEAR_SMALL_CODE=0
 endif
 CFLAGS+=$(COPT) -ffunction-sections -fdata-sections -fvisibility=hidden
 LDFLAGS += -Wl,--gc-sections

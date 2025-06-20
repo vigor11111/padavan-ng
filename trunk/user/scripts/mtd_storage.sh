@@ -209,7 +209,7 @@ func_fill()
 
 	user_hosts="$dir_dnsmasq/hosts"
 	user_dnsmasq_conf="$dir_dnsmasq/dnsmasq.conf"
-	user_dnsmasq_serv="$dir_dnsmasq/dnsmasq.servers"
+	user_dnsmasq_servers="$dir_dnsmasq/dnsmasq.servers"
 	user_dhcp_conf="$dir_dnsmasq/dhcp.conf"
 	user_ovpnsvr_conf="$dir_ovpnsvr/server.conf"
 	user_ovpncli_conf="$dir_ovpncli/client.conf"
@@ -217,6 +217,7 @@ func_fill()
 	user_sswan_conf="$dir_sswan/strongswan.conf"
 	user_sswan_ipsec_conf="$dir_sswan/ipsec.conf"
 	user_sswan_secrets="$dir_sswan/ipsec.secrets"
+	user_smb_conf="$dir_storage/smb.conf"
 
 	# create crond dir
 	[ ! -d "$dir_crond" ] && mkdir -p -m 730 "$dir_crond"
@@ -493,15 +494,15 @@ EOF
 	fi
 
 	# create user dns servers
-	if [ ! -f "$user_dnsmasq_serv" ]; then
-		cat > "$user_dnsmasq_serv" <<EOF
+	if [ ! -f "$user_dnsmasq_servers" ] ; then
+		cat > "$user_dnsmasq_servers" <<EOF
 # Custom user servers file for dnsmasq
 
 ### Use time server update bypassing DoT/DoH
 server=/ntp.org/time.cloudflare.com/time.google.com/time.in.ua/1.1.1.1
 
 EOF
-		chmod 644 "$user_dnsmasq_serv"
+		chmod 644 "$user_dnsmasq_servers"
 	fi
 
 	# create user dns dhcp_conf
@@ -654,6 +655,44 @@ EOF
 
 EOF
 			chmod 644 "$user_sswan_secrets"
+		fi
+	fi
+	# create user smb.conf file
+	if [ -x "/sbin/smbd" ]; then
+		if [ ! -f "$user_smb_conf" ]; then
+			cat > "$user_smb_conf" <<EOF
+### Custom user conf file for Samba server
+
+### This is continuation of global section of auto-generated config
+### DO NOT define [global] here or it may break configuration!
+
+### Limit minimal protocol version to 2
+# min protocol = smb2
+
+### Bind to 0.0.0.0 and :: instead of interfaces only
+# bind interfaces only = no
+
+### Allows symlinks to be followed
+# follow symlinks = yes
+# wide links = yes
+
+
+### You can add custom shares here (only after defining all global parameters)
+### Hide opt directory
+# [opt]
+# browseable = no
+
+### Export router storage
+# [storage]
+# comment = storage
+# path = /etc/storage
+# read only = no
+# valid users = admin
+# read list = admin
+# write list = admin
+
+EOF
+			chmod 644 "$user_smb_conf"
 		fi
 	fi
 }

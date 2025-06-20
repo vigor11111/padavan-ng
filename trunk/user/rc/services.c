@@ -52,7 +52,7 @@ start_syslogd(void)
 		"-S",				/* smaller output */
 		"-D",				/* drop duplicates */
 		"-O", "/tmp/syslog.log",	/* syslog file */
-		NULL,				/* -L */
+		"-L",				/* log locally */
 		NULL, NULL,			/* -R host:port */
 		NULL
 	};
@@ -63,8 +63,7 @@ start_syslogd(void)
 	if (is_valid_ipv4(log_ipaddr)) {
 		int log_port = nvram_safe_get_int("log_port", 514, 1, 65535);
 		snprintf(host_dst, sizeof(host_dst), "%s:%d", log_ipaddr, log_port);
-		syslogd_argv[7] = "-L";		/* local & remote */
-		syslogd_argv[8] = "-R";
+		syslogd_argv[8] = "-R";		/* Log locally and via network */
 		syslogd_argv[9] = host_dst;
 	}
 
@@ -325,6 +324,37 @@ void restart_stubby(void){
 	stop_stubby();
 	start_stubby();
 	restart_dhcpd();
+}
+#endif
+#if defined(APP_ZAPRET)
+int is_zapret_run(void){
+	if (check_if_file_exist("/usr/bin/nfqws"))
+	{
+		if (pids("zapret"))
+			return 1;
+	}
+	return 0;
+}
+
+void stop_zapret(void){
+	eval("/usr/bin/zapret.sh", "stop");
+}
+
+void start_zapret(void){
+	int zapret_mode = nvram_get_int("zapret_enable");
+	if (zapret_mode == 1)
+		eval("/usr/bin/zapret.sh", "start");
+}
+
+void restart_zapret(void){
+	stop_zapret();
+	start_zapret();
+}
+
+void reload_zapret(void){
+	int zapret_mode = nvram_get_int("zapret_enable");
+	if (zapret_mode == 1)
+		eval("/usr/bin/zapret.sh", "reload");
 }
 #endif
 #if defined(APP_TOR)
@@ -659,6 +689,9 @@ start_services_once(int is_ap_mode)
 #if defined(APP_STUBBY)
 	start_stubby();
 #endif
+#if defined(APP_ZAPRET)
+	start_zapret();
+#endif
 #if defined(APP_TOR)
 	start_tor();
 #endif
@@ -726,6 +759,9 @@ stop_services(int stopall)
 #endif
 #if defined(APP_STUBBY)
 	stop_stubby();
+#endif
+#if defined(APP_ZAPRET)
+	stop_zapret();
 #endif
 #if defined(APP_TOR)
 	stop_tor();
