@@ -1,1 +1,0 @@
-scriptlib_SRCS += restart_vpncli.sh
