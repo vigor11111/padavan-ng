@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title><#Web_Title#> - VPN Client</title>
+<title><#Web_Title#> - VPN Client Subscription</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="-1">
@@ -63,7 +63,7 @@ function applyRule(){
     document.form.action_mode.value = " Apply ";
     document.form.current_page.value = "/vpncli.asp";
     document.form.next_page.value = "";
-    document.form.action_script.value = "vpncli_run";
+    document.form.action_script.value = "restart_vpncli";
     
     document.form.submit();
 }
