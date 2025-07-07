@@ -680,6 +680,7 @@
 			{"ovpncli.client.crt", "File", NULL, EVM_RESTART_VPNCLI},
 			{"ovpncli.client.key", "File", NULL, EVM_RESTART_VPNCLI},
 			{"ovpncli.ta.key", "File", NULL, EVM_RESTART_VPNCLI},
+			{"restart_vpncli", "restart_vpncli.sh"},
 #endif
 			{"scripts.vpns_client_script.sh", "File", NULL, FALSE},
 			{"scripts.vpnc_server_script.sh", "File", NULL, EVM_RESTART_VPNCLI},
