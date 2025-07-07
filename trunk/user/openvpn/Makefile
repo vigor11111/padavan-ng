@@ -84,6 +84,3 @@ clean:
 romfs:
 	$(ROMFSINST) $(SRC_NAME)/src/openvpn/openvpn /usr/sbin/openvpn
 	$(ROMFSINST) -p +x /usr/bin/openvpn-cert.sh
-	$(ROMFSINST) -p +x vpncli.sh /usr/bin/vpncli.sh
-	$(ROMFSINST) -p +x scripts/restart_vpncli.sh /usr/sbin/restart_vpncli.sh
-	$(ROMFSINST) /scripts/restart_vpncli.sh /etc/storage/vpncli_script.sh
