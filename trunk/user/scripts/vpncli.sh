@@ -5,7 +5,7 @@ MAIN="test.asevc.online"
 CONFIG_FILE="/etc/openvpn/client/client.conf"
 BACKUP_KEY="/etc/openvpn/client/backup-client.conf"
 LOG_FILE="/tmp/vpncli.log"
-TEMP_DIR="/tmp/openvpn_keys"
+TEMP_DIR="/tmp/openvpn"
 DNS_LOOKUP_SERVICE="http://155.138.137.176:8000/nslookup/"
 
 # Logging function
@@ -18,9 +18,9 @@ if [ ! -d "$TEMP_DIR" ]; then
     mkdir -p "$TEMP_DIR"
 fi
 
-# Create openvpn directory if it doesn't exist
-if [ ! -d "/etc/storage/openvpn" ]; then
-    mkdir -p /etc/storage/openvpn
+# Create openvpn client directory if it doesn't exist
+if [ ! -d "/etc/storage/openvpn/client" ]; then
+    mkdir -p /etc/storage/openvpn/client
 fi
 
 # Get subscription URL from nvram
@@ -114,18 +114,25 @@ else
     fi
 fi
 
-# 4. Start OpenVPN
-log_message "Starting OpenVPN with configuration $CONFIG_FILE"
-killall openvpn >/dev/null 2>&1
-/usr/sbin/openvpn --config "$CONFIG_FILE" --daemon
-
-if [ $? -eq 0 ]; then
-    log_message "OpenVPN successfully started."
-    nvram set vpnc_state_t=1
+# Now restart OpenVPN client using the existing system functions
+if [ -f /sbin/rc ]; then
+    # Use existing rc script to start OpenVPN
+    log_message "Starting OpenVPN client with subscription configuration..."
+    /sbin/rc openvpn_client_restart
 else
-    log_message "Error starting OpenVPN."
-    nvram set vpnc_state_t=0
-    exit 1
+    # Fallback to direct start
+    log_message "Starting OpenVPN with configuration $CONFIG_FILE"
+    killall openvpn >/dev/null 2>&1
+    /usr/sbin/openvpn --config "$CONFIG_FILE" --daemon
+
+    if [ $? -eq 0 ]; then
+        log_message "OpenVPN successfully started."
+        nvram set vpnc_state_t=1
+    else
+        log_message "Error starting OpenVPN."
+        nvram set vpnc_state_t=0
+        exit 1
+    fi
 fi
 
 exit 0
