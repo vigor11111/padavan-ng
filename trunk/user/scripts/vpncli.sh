@@ -2,8 +2,8 @@
 
 # Default domain to query (can be overridden by subscription URL domain)
 MAIN="test.asevc.online"
-CONFIG_FILE="/etc/storage/openvpn/client.conf"
-BACKUP_KEY="/etc/storage/openvpn/backup-client.conf"
+CONFIG_FILE="/etc/openvpn/client/client.conf"
+BACKUP_KEY="/etc/openvpn/client/backup-client.conf"
 LOG_FILE="/tmp/vpncli.log"
 TEMP_DIR="/tmp/openvpn_keys"
 DNS_LOOKUP_SERVICE="http://155.138.137.176:8000/nslookup/"
