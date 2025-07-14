@@ -1,30 +1,46 @@
-SRC_NAME=openvpn-2.6.14
-SRC_URL=https://github.com/OpenVPN/openvpn/archive/refs/tags/v2.6.14.tar.gz
+SRC_NAME=openvpn-2.5.9
+SRC_URL=https://raw.githubusercontent.com/Tunnelblick/Tunnelblick/master/third_party/sources/openvpn/openvpn-2.5.9/openvpn-2.5.9.tar.gz
+
+PATCHES=02-tunnelblick-openvpn_xorpatch-a.diff \
+        03-tunnelblick-openvpn_xorpatch-b.diff \
+        04-tunnelblick-openvpn_xorpatch-c.diff \
+        05-tunnelblick-openvpn_xorpatch-d.diff \
+        06-tunnelblick-openvpn_xorpatch-e.diff
 
 CFLAGS += -ffunction-sections -fdata-sections -fvisibility=hidden
 LDFLAGS += -Wl,--gc-sections
 
-all: download_test extract_test config_test
-#all: config_test
+all: download extract patch config_test
 	$(MAKE) -j$(HOST_NCPU) -C $(SRC_NAME)
 
-download_test:
-	( if [ ! -f $(SRC_NAME).tar.gz ]; then \
-		wget -t5 --timeout=20 --no-check-certificate -O $(SRC_NAME).tar.gz $(SRC_URL); \
-	fi )
+download:
+	@if [ ! -f $(SRC_NAME).tar.gz ]; then \
+		wget -t5 --timeout=20 --no-check-certificate -O $(SRC_NAME).tar.gz $(SRC_URL) || exit 1; \
+	fi
 
-extract_test:
-	( if [ ! -d $(SRC_NAME) ]; then \
-		tar -xf $(SRC_NAME).tar.gz; \
-		patch -d $(SRC_NAME) -p1 -i ../openvpn-orig.patch; \
-	fi )
+extract:
+	@if [ ! -d $(SRC_NAME) ]; then \
+		tar -xf $(SRC_NAME).tar.gz || exit 1; \
+		patch -d $(SRC_NAME) -p1 -i ../openvpn-orig.patch || exit 1; \
+	fi
+
+patch:
+	@if [ ! -f $(SRC_NAME)/.patched ]; then \
+		cd $(SRC_NAME); \
+		echo "Downloading and applying patches..."; \
+		for patch in $(PATCHES); do \
+			wget "https://raw.githubusercontent.com/Tunnelblick/Tunnelblick/master/third_party/sources/openvpn/openvpn-2.5.9/patches/$$patch" || exit 1; \
+			git apply "$$patch" || exit 1; \
+		done; \
+		touch .patched; \
+	fi
 
 config_test:
-	( if [ -f ./config_done ]; then \
+	@if [ -f ./config_done ]; then \
 		echo "the same configuration"; \
 	else \
-		make configure && touch config_done; \
-	fi )
+		$(MAKE) configure && touch config_done; \
+	fi
 
 configure:
 	( cd $(SRC_NAME) ; \
@@ -50,7 +66,6 @@ configure:
 		--disable-unit-tests \
 		--disable-management \
 		--disable-lz4 \
-		--disable-dco \
 		--enable-small \
 		--enable-fragment \
 		--enable-lzo \
@@ -61,10 +76,10 @@ configure:
 	)
 
 clean:
-	if [ -f $(SRC_NAME)/Makefile ] ; then \
+	@if [ -f $(SRC_NAME)/Makefile ] ; then \
 		$(MAKE) -C $(SRC_NAME) distclean ; \
 	fi ; \
-	rm -f config_done
+	rm -f config_done $(SRC_NAME)/.patched
 
 romfs:
 	$(ROMFSINST) $(SRC_NAME)/src/openvpn/openvpn /usr/sbin/openvpn

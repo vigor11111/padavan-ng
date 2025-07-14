@@ -9,6 +9,8 @@ romfs:
 	$(ROMFSINST) /sbin/dev_init.sh
 	$(ROMFSINST) /sbin/reset_ss.sh
 	$(ROMFSINST) /sbin/mtd_storage.sh
+	$(ROMFSINST) -p +x $(THISDIR)/vpncli.sh /sbin/vpncli.sh
+	$(ROMFSINST) -p +x $(THISDIR)/restart_vpncli.sh /sbin/restart_vpncli.sh
 	$(ROMFSINST) -p +x $(THISDIR)/autostart.sh /usr/bin/autostart.sh
 ifeq ($(STORAGE_ENABLED),y)
 	$(ROMFSINST) /sbin/automount.sh
