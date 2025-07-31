@@ -136,3 +136,6 @@ obj-$(CONFIG_VIRT_DRIVERS)	+= virt/
 obj-$(CONFIG_HYPERV)		+= hv/
 
 obj-$(CONFIG_PM_DEVFREQ)	+= devfreq/
+
+# USB over IP
+obj-$(CONFIG_USBIP_CORE)	+= staging/usbip/

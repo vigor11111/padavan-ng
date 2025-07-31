@@ -149,6 +149,8 @@ dir_y						+= comgt-0.32
 dir_y						+= uqmi
 dir_$(CONFIG_FIRMWARE_INCLUDE_LPRD)		+= LPRng
 dir_$(CONFIG_FIRMWARE_INCLUDE_U2EC)		+= u2ec
+dir_$(CONFIG_FIRMWARE_INCLUDE_USBIP)		+= sysfsutils
+dir_$(CONFIG_FIRMWARE_INCLUDE_USBIP)		+= usbip
 endif
 
 ifeq ($(STORAGE_ENABLED),y)

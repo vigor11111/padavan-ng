@@ -544,6 +544,11 @@ if [ "$CONFIG_FIRMWARE_INCLUDE_NFQWS" = "y" ] ; then
 	func_enable_kernel_param_as_m "CONFIG_NETFILTER_NETLINK_QUEUE"
 	func_enable_kernel_param_as_m "CONFIG_NETFILTER_XT_TARGET_NFQUEUE"
 fi
+############################## USB OVER IP ############################
+if [ "$CONFIG_FIRMWARE_INCLUDE_USBIP" = "y" ] ; then
+	func_enable_kernel_param_as_m "CONFIG_USBIP_CORE"
+	func_enable_kernel_param_as_m "CONFIG_USBIP_HOST"
+fi
 #######################################################################
 echo --------------------------MAKE-DEP--------------------------------
 make dep
