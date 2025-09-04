@@ -139,7 +139,7 @@ get_eeprom_params(void)
 	char country_code[4];
 	char regspec_code[8];
 	char wps_pin[12];
-	char productid[16];
+	char productid[24];
 	char fwver[10], fwver_sub[36];
 
 	memset(buffer, 0xff, ETHER_ADDR_LEN);

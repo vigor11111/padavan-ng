@@ -142,8 +142,7 @@ check_header_image(const char *buf, long *file_len)
 static int
 check_header_image(const char *buf, long *file_len)
 {
-	int pid_asus_len;
-	char pid_asus[16];
+	char pid_asus[sizeof(((TAIL*)0)->productid) + 1];
 	image_header_t *hdr = (image_header_t *)buf;
 
 	/* check header magic */
@@ -152,12 +151,8 @@ check_header_image(const char *buf, long *file_len)
 		return -1;
 	}
 
-	pid_asus_len = strlen(BOARD_PID);
-	if (pid_asus_len > 12)
-		pid_asus_len = 12;
-
-	strncpy(pid_asus, buf+36, pid_asus_len);
-	pid_asus[pid_asus_len] = 0;
+	memcpy(pid_asus, hdr->tail.productid, sizeof(pid_asus) - 1);
+	pid_asus[sizeof(pid_asus) - 1] = 0;
 
 	if (strcmp(pid_asus, BOARD_PID) != 0) {
 		httpd_log("%s: Incorrect image ProductID: %s! Expected is %s.", "Firmware update", pid_asus, BOARD_PID);
